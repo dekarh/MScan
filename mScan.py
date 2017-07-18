@@ -44,7 +44,8 @@ authorize(driver, **webconfig)  # Авторизация
 wj(driver)
 driver.get(**fillconfig)  # Открытие страницы где поиск
 
-#write_cursor =
+sql = 'INSERT INTO peoples(name_age, mamba_id, category, html, image) VALUES (%s,%s,%s,%s,%s)'
+write_cursor.executemany()
 
 logo = urllib.request.urlopen("http://www.marseille-tourisme.com/fileadmin/user_upload/plan_mars2013.jpg").read()
 
