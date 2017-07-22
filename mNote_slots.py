@@ -34,7 +34,12 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.read_cursor = self.dbconn.cursor()
         self.write_cursor = self.dbconn.cursor()
 
+        self.id_all = []
+        self.id_tek = 0
         self.mamba_id = {}
+#        self.mamba_id_tek = ''
+        self.msg_id = {}
+#        self.msg_id_tek = ''
         self.t_people = {}
         self.t_link = {}
         self.html = {}
@@ -69,14 +74,15 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
 
     def setup_tableWidget(self):
         if self.stStatus == 2:
-            self.read_cursor.execute('SELECT IF(status=0,"OFF,"ONL"), her_name, age, msg, unread_msg, mamba_id, t_people, t_link, html, foto,'
-                                     ' history FROM peoples WHERE t_link >= %s AND t_link <= %s AND t_people >= %s '
-                                     'AND t_people <= %s;',
+            self.read_cursor.execute('SELECT IF(status=0,"OFF,"ONL"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,'
+                                     ' t_people, t_link, html, foto, history FROM peoples '
+                                     'WHERE t_link >= %s AND t_link <= %s AND t_people >= %s AND t_people <= %s;',
                                      (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo))
         else:
-            self.read_cursor.execute('SELECT IF(status=0,"OFF,"ONL"), her_name, age, msg, unread_msg, mamba_id, t_people, t_link, html, foto,'
-                                     ' history FROM peoples WHERE t_link >= %s AND t_link <= %s AND t_people >= %s '
-                                     'AND t_people <= %s AND status = %s;',
+            self.read_cursor.execute('SELECT IF(status=0,"OFF,"ONL"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,'
+                                     ' t_people, t_link, html, foto, history FROM peoples '
+                                     'WHERE t_link >= %s AND t_link <= %s AND t_people >= %s  AND t_people <= %s '
+                                     'AND status = %s;',
                                      (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo, self.stStatus))
 
         rows = self.read_cursor.fetchall()
@@ -84,46 +90,52 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.tableWidget.setRowCount(len(rows))        # Кол-во строк из таблицы
         for i, row in enumerate(rows):
             for j, cell in enumerate(row):
-                if j == len(row) - 1:
-                    self.history[row[0]] = cell
+                if j == len(row) - 8:
+                    self.id_all.append(int(cell))
+                    self.id_tek = int(cell)
+                elif j == len(row) - 1:
+                    self.history[self.id_tek] = cell
                 elif j == len(row) - 2:
-                    self.foto[row[0]] = cell
+                    self.foto[self.id_tek] = cell
                 elif j == len(row) - 3:
-                    self.html[row[0]] = cell
+                    self.html[self.id_tek] = cell
                 elif j == len(row) - 4:
-                    self.t_link[row[0]] = cell
+                    self.t_link[self.id_tek] = cell
                 elif j == len(row) - 5:
-                    self.t_people[row[0]] = cell
+                    self.t_people[self.id_tek] = cell
                 elif j == len(row) - 6:
-                    self.mamba_id[row[0]] = cell
+                    self.mamba_id[self.id_tek] = cell
+# "https://www.mamba.ru/mb1744035084?hit=35&sp=1".split("https://www.mamba.ru/")[1].split("?")[0]
+# "https://www.mamba.ru/erdyk2008?hit=35&sp=1".split("https://www.mamba.ru/")[1].split("?")[0]
+                elif j == len(row) - 7:
+                    self.msg_id[self.id_tek] = cell
                 else:
                     self.tableWidget.setItem(i, j, QTableWidgetItem(str(cell)))
 
-        self.mamba_id_tek = self.mamba_id[0]
+        self.id_tek = self.id_all[0]
+#        self.mamba_id_tek = self.mamba_id[self.id_tek]
+#        self.msg_id_tek = self.msg_id[self.id_tek]
         # Устанавливаем заголовки таблицы
         self.tableWidget.setHorizontalHeaderLabels(["Вкл", "Имя", "Лет", "Сооб-", "щений"])
 
         # Устанавливаем выравнивание на заголовки
         self.tableWidget.horizontalHeaderItem(0).setTextAlignment(Qt.AlignCenter)
         self.tableWidget.horizontalHeaderItem(1).setTextAlignment(Qt.AlignCenter)
-        self.tableFIOmain.horizontalHeaderItem(2).setTextAlignment(Qt.AlignCenter)
-        self.tableFIOmain.horizontalHeaderItem(3).setTextAlignment(Qt.AlignCenter)
-        self.tableFIOmain.horizontalHeaderItem(4).setTextAlignment(Qt.AlignCenter)
+        self.tableWidget.horizontalHeaderItem(2).setTextAlignment(Qt.AlignCenter)
+        self.tableWidget.horizontalHeaderItem(3).setTextAlignment(Qt.AlignCenter)
+        self.tableWidget.horizontalHeaderItem(4).setTextAlignment(Qt.AlignCenter)
 
         # делаем ресайз колонок по содержимому
-        self.tableFIOmain.resizeColumnsToContents()
-        self.mamba_id_tek = self.tableWidget.model().index(0, 0).data()
+        self.tableWidget.resizeColumnsToContents()
         return
 
     def click_tableWidget(self, index):
         self.innFIO = self.tableFIOmain.model().index(index.row(), 0).data()
         self.curFIO = self.tableFIOmain.model().index(index.row(), 1).data()
         self.updateHistory()
-        self.inn = self.tableFirms_inns[0]
-        self.updateDescription()
-        self.setup_tableFirms()
-        self.click_tableFirms()
-        self.click_table2GIS()
+        self.id_tek = self.id_all[index.row()]
+        self.mamba_id_tek = self.mamba_id[self.id_tek]
+        self.msg_id_tek = self.msg_id[self.id_tek]
         self.comboBoxTek.setCurrentIndex(int(self.steps[int(self.innFIO)]))
         return None
 
