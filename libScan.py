@@ -165,9 +165,9 @@ PEOPLE = [
 ]
 
 ONLINE = [
-    'OFF',
-    'ONL',
-    '---'
+    'OFFLINE',
+    'ONLINE',
+    'Все равно'
 ]
 
 def unique(lst):
