@@ -20,14 +20,11 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
     def setupUi(self, form):
         Ui_Form.setupUi(self,form)
 
-        webconfig = read_config(section='web')
-        scanconfig = read_config(section='scan')
+        self.scanconfig = read_config(section='scan')
+        self.webconfig = read_config(section='web')
 
         self.drv = webdriver.Chrome()  # Инициализация драйвера
-        self.drv.implicitly_wait(5)  # Неявное ожидание - ждать ответа на каждый запрос до 10 сек
-
-#        authorize(self.drv, **webconfig)  # Авторизация
-#        wj(self.drv)
+        self.drv.implicitly_wait(5)  # Неявное ожидание - ждать ответа на каждый запрос до 5 сек
 
         dbconfig = read_config(section='mysql')
         self.dbconn = MySQLConnection(**dbconfig)  # Открываем БД из конфиг-файла
@@ -64,7 +61,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.cbPeople.addItems(PEOPLE)
         self.cbPeople.setCurrentIndex(0)
         self.cbLink.addItems(LINK)
-        self.cbLink.setCurrentIndex(0)
+        self.cbLink.setCurrentIndex(6)
         self.setup_tableWidget()
         return
 
@@ -177,6 +174,10 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
 #        self.textHistory.setText(self.histories[int(self.innFIO)])
 
     def click_pbRefresh(self):
+#        pixmap = QPixmap("1.jpg")
+#        self.label_3.setPixmap(pixmap)
+
+
         fillconfig = read_config(section='fill')
         self.drv.get(**fillconfig)  # Открытие страницы где поиск
         sql = 'INSERT INTO peoples(name_age, mamba_id, category, html, image) VALUES (%s,%s,%s,%s,%s)'
@@ -189,7 +190,13 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
 # "https://www.mamba.ru/erdyk2008?hit=35&sp=1".split("https://www.mamba.ru/")[1].split("?")[0]
 
     def click_pbReLogin(self):
-        q=0
+        self.drv.close()
+        self.drv = webdriver.Chrome()  # Инициализация драйвера
+        self.drv.implicitly_wait(5)  # Неявное ожидание - ждать ответа на каждый запрос до 5 сек
+
+        authorize(self.drv, **self.webconfig)  # Авторизация
+        wj(self.drv)
+
 
     def click_pbScan(self):
         q=0
