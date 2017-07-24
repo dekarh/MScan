@@ -34,7 +34,10 @@ B = {
     'tiles-name': {'t': 'x', 's': '//DIV[@class="tiles-list-wrapper"]//A[@href]', 'a': 'text'},
     'tiles-href': {'t': 'x', 's': '//DIV[@class="tiles-list-wrapper"]//A[@href]', 'a': 'href'},
     'tiles-img' : {'t': 'x', 's': '//DIV[@class="tiles-list-wrapper"]//IMG[@src]', 'a': 'src'},
-
+    'tiles-offl': {'t': 'x', 's': '//I[@class="icn icn-circleOnline-small icn-small info-online js-info-online"]'
+                                  '/..', 'a': 'href'},
+    'tiles-onln': {'t': 'x', 's': '//I[@class="icn icn-circleOnline-small icn-small info-online js-info-online show"]'
+                                  '/..', 'a': 'href'},
     'menuRegs'  : {'t': 'x', 's': '(//SPAN[@class="controls-DropdownList__text"])[1]'},
     'menuCats'  : {'t': 'x', 's': '(//SPAN[@class="controls-DropdownList__text"])[2]'},
     'firms_x'   : {'t': 'x', 's': '//DIV[@class="Contragents-CommonRenders__InnCorner '
