@@ -5,7 +5,7 @@ from PyQt5.QtCore import QDate, QDateTime, QSize, Qt, QByteArray
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTableWidget, QTableWidgetItem
 from os import popen
-from libScan import read_config, LINK, PEOPLE, ONLINE, l, authorize, p, B, wj
+from libScan import read_config, LINK, PEOPLE, ONLINE, l, authorize, p, B, wj, wr
 import urllib.request
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -29,8 +29,8 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
 
         dbconfig = read_config(section='mysql')
         self.dbconn = MySQLConnection(**dbconfig)  # Открываем БД из конфиг-файла
-        self.read_cursor = self.dbconn.cursor()
-        self.write_cursor = self.dbconn.cursor()
+#        self.read_cursor = self.dbconn.cursor()
+#        self.write_cursor = self.dbconn.cursor()
 
         self.id_all = []
         self.id_tek = 0
@@ -70,19 +70,20 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.setup_tableWidget()
 
     def setup_tableWidget(self):
+        read_cursor = self.dbconn.cursor()
         if self.stStatus == 2:
-            self.read_cursor.execute('SELECT IF(status=0,"OFF","ONL"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,'
+            read_cursor.execute('SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,'
                                      ' t_people, t_link, html, foto, history FROM peoples '
                                      'WHERE t_link >= %s AND t_link <= %s AND t_people >= %s AND t_people <= %s;',
                                      (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo))
         else:
-            self.read_cursor.execute('SELECT IF(status=0,"OFF","ONL"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,'
+            read_cursor.execute('SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,'
                                      ' t_people, t_link, html, foto, history FROM peoples '
                                      'WHERE t_link >= %s AND t_link <= %s AND t_people >= %s  AND t_people <= %s '
                                      'AND status = %s;',
                                      (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo, self.stStatus))
 
-        rows = self.read_cursor.fetchall()
+        rows = read_cursor.fetchall()
         self.tableWidget.setColumnCount(3)             # Устанавливаем кол-во колонок
         self.tableWidget.setRowCount(len(rows))        # Кол-во строк из таблицы
         for i, row in enumerate(rows):
@@ -135,10 +136,12 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         pixmap = QPixmap()
         pixmap.loadFromData(self.foto[self.id_tek],'JPG')
         self.label_3.setPixmap(pixmap)
+        self.anketa_html.setHtml(self.html[self.id_tek])
         return None
 
     def click_cbLink(self):
-        self.write_cursor.execute('UPDATE peoples SET t_link = %s WHERE id = %s',
+        write_cursor = self.dbconn.cursor()
+        write_cursor.execute('UPDATE peoples SET t_link = %s WHERE id = %s',
                                   (self.cbLink.currentIndex(), self.id_tek))
         self.dbconn.commit()
         if len(self.histories[self.id_tek]) > 0:
@@ -151,7 +154,8 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
 
 
     def click_cbPeople(self):
-        self.write_cursor.execute('UPDATE peoples SET t_people = %s WHERE id = %s',
+        write_cursor = self.dbconn.cursor()
+        write_cursor.execute('UPDATE peoples SET t_people = %s WHERE id = %s',
                                   (self.cbPeople.currentIndex(), self.id_tek))
         self.dbconn.commit()
         if len(self.histories[self.id_tek]) > 0:
@@ -182,22 +186,22 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.stPeopleTo = self.cbPeopleTo.currentIndex()
         self.setup_tableWidget()
 
-    def updateHistory(self):    # Проверить нужно ли last_id_tek
+    def updateHistory(self):
         current = self.textEdit.toPlainText()
         if self.histories[self.id_tek] == None:
             past = ''
         else:
             past = self.histories[self.id_tek]
         if current != past:
-            self.write_cursor.execute('UPDATE peoples SET history = %s WHERE id = %s', (current, self.id_tek))
+            write_cursor = self.dbconn.cursor()
+            write_cursor.execute('UPDATE peoples SET history = %s WHERE id = %s', (current, self.id_tek))
             self.dbconn.commit()
             self.histories[self.id_tek] = current
-#        self.last_innFIO = self.innFIO
-#        self.textHistory.setText(self.histories[int(self.innFIO)])
 
     def convert_mamba_id(self, href):
-        a = "".join([i.strip() for i in href])
-        m_id = a.strip().split("https://www.mamba.ru/")[1].split("?")[0]
+        a = "".join([k.strip() for k in href]).strip()
+        m_id = a[21:].split("?")[0]
+        print(a, a[21:], m_id)
         return m_id
 
     def convert_msg_id(self, m_id):
@@ -206,7 +210,168 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         else:
             return None
 
-    def click_pbRefresh(self):
+    def click_pbScan(self):
+        self.drv.get(**self.fillconfig)  # Открытие страницы где поиск
+
+        page = 1
+        standart = len(p(d=self.drv, f='ps', **B['tiles']))
+        while len(p(d=self.drv, f='ps', **B['tiles'])) == standart:
+            if page > 1:
+                wj(self.drv)
+                page_link = self.drv.find_element_by_xpath('//DIV[@class="pager wrap"]//LI[text()="' + str(page) + '"]')
+                wj(self.drv)
+                page_link.click()
+                wj(self.drv)
+            tiles = []
+            tiles = p(d=self.drv, f='ps', **B['tiles'])
+            hrefs = []
+            hrefs = p(d=self.drv, f='ps', **B['tiles-href'])
+            for i, mamba_href in enumerate(hrefs):
+                mamba_id = self.convert_mamba_id(mamba_href)
+                row_ch = []
+                read_cursor = self.dbconn.cursor()
+                read_cursor.execute('SELECT mamba_id, html FROM peoples WHERE mamba_id = %s', (mamba_id,))
+                row_ch = read_cursor.fetchall()
+                refresh_html = False  # анкета сохранена в базе?
+                if len(row_ch) > 0:
+                    if row_ch[0][1] == None:
+                        refresh_html = True
+                    elif len(row_ch[0][1]) < 10:
+                        refresh_html = True
+                else:
+                    refresh_html = True
+                if len(row_ch) < 1:  # такой записи нет в базе
+                    continue
+                elif refresh_html:  # запись есть, а анкеты нет
+                    tiles[i].click()
+                    wj(self.drv)
+                    html = p(d=self.drv, f='p', **B['anketa-html'])
+                    wj(self.drv)
+                    wr()
+                    back = p(d=self.drv, f='c', **B['back-find'])
+                    wj(self.drv)
+                    sql = 'UPDATE peoples SET html = %s WHERE mamba_id = %s'
+                    write_cursor = self.dbconn.cursor()
+                    write_cursor.execute(sql, (html, mamba_id))
+                    self.dbconn.commit()
+                    back.click()
+                    wj(self.drv)
+                    break
+                else:                                               # есть и запись и анкета
+                    continue
+            page += 1
+            q = 0
+        q = 0
+
+    def click_pbReLogin(self):
+        self.drv.quit()
+        self.drv = webdriver.Chrome()  # Инициализация драйвера
+        self.drv.implicitly_wait(5)  # Неявное ожидание - ждать ответа на каждый запрос до 5 сек
+        authorize(self.drv, **self.webconfig)  # Авторизация
+        wj(self.drv)
+
+
+    def click_pbRefresh(self):                                  # Обновление статусов
+        """
+        self.drv.get(**self.fillconfig)  # Открытие страницы где поиск
+
+        page = 1
+        standart = len(p(d=self.drv, f='ps', **B['tiles']))
+        while len(p(d=self.drv, f='ps', **B['tiles'])) == standart:
+            outs = []
+            statuses = []
+            status_and_html = []
+            if page > 1:
+                page_link = self.drv.find_element_by_xpath('//DIV[@class="pager wrap"]//LI[text()="' + str(page) + '"]')
+                page_link.click()
+            tiles = []
+            tiles = p(d=self.drv, f='ps', **B['tiles'])
+            names = []
+            names = p(d=self.drv, f='ps', **B['tiles-name'])
+            hrefs = []
+            hrefs = p(d=self.drv, f='ps', **B['tiles-href'])
+            fotos_hrefs = []
+            fotos_hrefs = p(d=self.drv, f='ps', **B['tiles-img'])
+            hrefs_onln = []
+            hrefs_onln = p(d=self.drv, f='ps', **B['tiles-onln'])
+            for i, mamba_href in enumerate(hrefs):
+                mamba_id = self.convert_mamba_id(mamba_href)
+                row_ch = []
+                read_cursor = self.dbconn.cursor()
+                read_cursor.execute('SELECT mamba_id, html FROM peoples WHERE mamba_id = %s',(mamba_id,))
+                row_ch = read_cursor.fetchall()
+                refresh_html = False                                # анкета сохранена в базе?
+                if len(row_ch) > 0:
+                    if row_ch[0][1] == None:
+                        refresh_html = True
+                    elif len(row_ch[0][1]) < 10:
+                        refresh_html = True
+                else:
+                    refresh_html = True
+                if len(row_ch) < 1:                                 # такой записи нет в базе
+                    out = tuple()
+                    age = ('0',)
+                    if len(names[i].split(',')) > 1:
+                        age = (names[i].split(',')[1].strip(), )
+                    out += (mamba_id, ) + (self.convert_msg_id(mamba_id), ) + (names[i].split(',')[0].strip(), ) + age
+                    status = 0
+                    for status_href in hrefs_onln:
+                        if self.convert_mamba_id(status_href) == mamba_id:
+                            status = 1
+                    foto = urllib.request.urlopen(fotos_hrefs[i]).read()
+
+                    if refresh_html:
+                        q=0
+                    else:
+                        html = row_ch[0][1]
+                    out += (status, ) + (foto, ) + (html,)
+                    outs.append(out)
+                elif refresh_html:                                  # запись есть, а анкеты нет
+                    status = 0
+                    for status_href in hrefs_onln:
+                        if self.convert_mamba_id(status_href) == mamba_id:
+                            status = 1
+                    tiles[i].click()
+                    wj(self.drv)
+                    html = p(d=self.drv, f='p', **B['anketa-html'])
+                    wj(self.drv)
+                    wr()
+                    back = p(d=self.drv, f='c', **B['back-find'])
+                    wj(self.drv)
+                    back.click()
+                    status_and_html.append((status, html, mamba_id))
+
+                else:                                               # есть и запись и анкета
+                    status = 0
+                    for status_href in hrefs_onln:
+                        if self.convert_mamba_id(status_href) == mamba_id:
+                            status = 1
+                    statuses.append((status, mamba_id))
+            if len(status_and_html) > 0:
+                sql = 'UPDATE peoples SET status = %s, html = %s WHERE mamba_id = %s'
+                write_cursor = self.dbconn.cursor()
+                write_cursor.executemany(sql, status_and_html)
+                self.dbconn.commit()
+            if len(outs) > 0:
+                sql = 'INSERT INTO peoples(mamba_id, msg_id, her_name, age, status, foto, html) VALUES (%s,%s,%s,%s,%s,%s,%s)'
+                write_cursor = self.dbconn.cursor()
+                write_cursor.executemany(sql, outs)
+                self.dbconn.commit()
+            if len(statuses) > 0:
+                sql = 'UPDATE peoples SET status = %s WHERE mamba_id = %s'
+                write_cursor = self.dbconn.cursor()
+                write_cursor.executemany(sql, statuses)
+                self.dbconn.commit()
+            page += 1
+            q=0
+        q = 0
+        """
+
+        sql = 'UPDATE peoples SET status = %s WHERE id > 0'     # Сначала всех в оффлайн
+        write_cursor = self.dbconn.cursor()
+        write_cursor.execute(sql, (0,))
+        self.dbconn.commit()
+
         self.drv.get(**self.fillconfig)  # Открытие страницы где поиск
 
         page = 1
@@ -228,8 +393,9 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             for i, mamba_href in enumerate(hrefs):
                 mamba_id = self.convert_mamba_id(mamba_href)
                 row_ch = []
-                self.read_cursor.execute('SELECT mamba_id FROM peoples WHERE mamba_id = %s',(mamba_id,))
-                row_ch = self.read_cursor.fetchall()
+                read_cursor = self.dbconn.cursor()
+                read_cursor.execute('SELECT mamba_id FROM peoples WHERE mamba_id = %s',(mamba_id,))
+                row_ch = read_cursor.fetchall()
                 if len(row_ch) < 1:
                     out = tuple()
                     age = ('0',)
@@ -251,27 +417,18 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                     statuses.append((status, mamba_id))
             if len(outs) > 0:
                 sql = 'INSERT INTO peoples(mamba_id, msg_id, her_name, age, status, foto) VALUES (%s,%s,%s,%s,%s,%s)'
-                self.write_cursor.executemany(sql, outs)
+                write_cursor = self.dbconn.cursor()
+                write_cursor.executemany(sql, outs)
                 self.dbconn.commit()
             if len(statuses) > 0:
                 sql = 'UPDATE peoples SET status = %s WHERE mamba_id = %s'
-                self.write_cursor.executemany(sql, statuses)
+                write_cursor = self.dbconn.cursor()
+                write_cursor.executemany(sql, statuses)
                 self.dbconn.commit()
             page += 1
             q=0
         q = 0
 
-    def click_pbReLogin(self):
-        self.drv.quit()
-        self.drv = webdriver.Chrome()  # Инициализация драйвера
-        self.drv.implicitly_wait(5)  # Неявное ожидание - ждать ответа на каждый запрос до 5 сек
-
-        authorize(self.drv, **self.webconfig)  # Авторизация
-        wj(self.drv)
-
-
-    def click_pbScan(self):
-        q=0
 
     def click_pbToAnketa(self):
         q=0

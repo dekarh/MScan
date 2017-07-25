@@ -20,6 +20,7 @@ from datetime import datetime
 import time
 import string
 import sys
+from random import uniform
 
 # DRIVER_PATH = 'drivers/chromedriver.exe'
 #DRIVER_PATH = 'drivers/chromedriver'
@@ -38,6 +39,10 @@ B = {
                                   '/..', 'a': 'href'},
     'tiles-onln': {'t': 'x', 's': '//I[@class="icn icn-circleOnline-small icn-small info-online js-info-online show"]'
                                   '/..', 'a': 'href'},
+   'anketa-html': {'t': 'x', 's': '//DIV[@id="Anketa"]', 'a': 'outerHTML'},
+    'back-find' : {'t': 'x', 's': '//A[@class="widget-title js-widget-title"][text()="Результаты поиска"]'},
+
+
     'menuRegs'  : {'t': 'x', 's': '(//SPAN[@class="controls-DropdownList__text"])[1]'},
     'menuCats'  : {'t': 'x', 's': '(//SPAN[@class="controls-DropdownList__text"])[2]'},
     'firms_x'   : {'t': 'x', 's': '//DIV[@class="Contragents-CommonRenders__InnCorner '
@@ -185,6 +190,9 @@ def unique(lst):
                 break
             seen.add(x.lower())
     return
+
+def wr():
+    time.sleep(uniform(0.5, 5))
 
 def read_config(filename='config.ini', section='mysql'):
     """ Read database configuration file and return a dictionary object
