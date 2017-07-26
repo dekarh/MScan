@@ -5,7 +5,7 @@ from PyQt5.QtCore import QDate, QDateTime, QSize, Qt, QByteArray
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTableWidget, QTableWidgetItem
 from os import popen
-from libScan import read_config, LINK, PEOPLE, ONLINE, l, authorize, p, B, wj, wr
+from libScan import read_config, LINK, PEOPLE, ONLINE, s, authorize, p, B, wj, wr
 import urllib.request
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -50,7 +50,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.stLinkTo = 7
         self.cbLinkTo.addItems(LINK)
         self.cbLinkTo.setCurrentIndex(self.stLinkTo)
-        self.stPeopleFrom = 6
+        self.stPeopleFrom = 7
         self.cbPeopleFrom.addItems(PEOPLE)
         self.cbPeopleFrom.setCurrentIndex(self.stPeopleFrom)
         self.stPeopleTo = 8
@@ -70,22 +70,26 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.setup_tableWidget()
 
     def setup_tableWidget(self):
+        self.tableWidget.setColumnCount(0)
+        self.tableWidget.setRowCount(0)        # Кол-во строк из таблицы
         read_cursor = self.dbconn.cursor()
         if self.stStatus == 2:
-            read_cursor.execute('SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,'
-                                     ' t_people, t_link, html, foto, history FROM peoples '
-                                     'WHERE t_link >= %s AND t_link <= %s AND t_people >= %s AND t_people <= %s;',
-                                     (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo))
+            read_cursor.execute('SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id,'
+                                ' mamba_id, t_people, t_link, html, foto, history FROM peoples WHERE t_link >= %s'
+                                ' AND t_link <= %s AND t_people >= %s AND t_people <= %s AND html IS NOT NULL '
+                                'ORDER BY age DESC;',
+                                (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo))
         else:
-            read_cursor.execute('SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,'
-                                     ' t_people, t_link, html, foto, history FROM peoples '
-                                     'WHERE t_link >= %s AND t_link <= %s AND t_people >= %s  AND t_people <= %s '
-                                     'AND status = %s;',
-                                     (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo, self.stStatus))
+            read_cursor.execute('SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, '
+                                'mamba_id, t_people, t_link, html, foto, history FROM peoples WHERE t_link >= %s '
+                                'AND t_link <= %s AND t_people >= %s  AND t_people <= %s AND status = %s '
+                                'AND html IS NOT NULL ORDER BY age DESC;',
+                                (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo, self.stStatus))
 
         rows = read_cursor.fetchall()
         self.tableWidget.setColumnCount(3)             # Устанавливаем кол-во колонок
         self.tableWidget.setRowCount(len(rows))        # Кол-во строк из таблицы
+        self.id_all = []
         for i, row in enumerate(rows):
             for j, cell in enumerate(row):
                 if j == len(row) - 8:
@@ -106,7 +110,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                 elif j == len(row) - 7:
                     self.msg_id[self.id_tek] = cell
                 elif j == len(row) - 9:
-                    q = 0
+                    q = 0                                           # сообщения не показывает, с...
                 elif j == len(row) - 10:
                     q = 0
                 else:
@@ -144,12 +148,13 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         write_cursor.execute('UPDATE peoples SET t_link = %s WHERE id = %s',
                                   (self.cbLink.currentIndex(), self.id_tek))
         self.dbconn.commit()
-        if len(self.histories[self.id_tek]) > 0:
-            self.textEdit.setText(self.histories[self.id_tek] + '\n' + datetime.now().strftime("%d:%m:%y") +
-                              ' этап-> ' +  self.cbLink.currentText())
+        self.t_link[self.id_tek] = self.cbLink.currentIndex()
+        if len(s(self.histories[self.id_tek])) > 0:
+            self.textEdit.setText(s(self.histories[self.id_tek]) + '\n' + datetime.now().strftime("%d.%m.%y") +
+                              ' этап-> ' +  s(self.cbLink.currentText()))
         else:
-            self.textEdit.setText(self.histories[self.id_tek] + datetime.now().strftime("%d:%m:%y") +
-                              ' этап-> ' +  self.cbLink.currentText())
+            self.textEdit.setText(s(self.histories[self.id_tek]) + datetime.now().strftime("%d.%m.%y") +
+                              ' этап-> ' +  s(self.cbLink.currentText()))
         self.updateHistory()
 
 
@@ -158,11 +163,12 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         write_cursor.execute('UPDATE peoples SET t_people = %s WHERE id = %s',
                                   (self.cbPeople.currentIndex(), self.id_tek))
         self.dbconn.commit()
-        if len(self.histories[self.id_tek]) > 0:
-            self.textEdit.setText(self.histories[self.id_tek] + '\n' + datetime.now().strftime("%d:%m:%y") +
+        self.t_people[self.id_tek] = self.cbPeople.currentIndex()
+        if len(s(self.histories[self.id_tek])) > 0:
+            self.textEdit.setText(s(self.histories[self.id_tek]) + '\n' + datetime.now().strftime("%d.%m.%y") +
                               ' чел.-> ' +  self.cbPeople.currentText())
         else:
-            self.textEdit.setText(self.histories[self.id_tek] + datetime.now().strftime("%d:%m:%y") +
+            self.textEdit.setText(s(self.histories[self.id_tek]) + datetime.now().strftime("%d.%m.%y") +
                               ' чел.-> ' +  self.cbPeople.currentText())
         self.updateHistory()
 
@@ -245,7 +251,30 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                 elif refresh_html:  # запись есть, а анкеты нет
                     tiles[i].click()
                     wj(self.drv)
-                    html = p(d=self.drv, f='p', **B['anketa-html'])
+                    html_msg = p(d=self.drv, f='p', **B['anketa-msg'])
+                    html_favour = p(d=self.drv, f='p', **B['anketa-favour'])
+                    html_abouts = p(d=self.drv, f='ps', **B['anketa-about'])
+                    html = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/' \
+                           'strict.dtd"><html><head></head><body><p>' + html_msg + '</p><p>'
+                    html += html_favour.replace('\n',' | ') + '</p>'
+                    if len(html_abouts) > 0:
+                        for html_into in html_abouts:
+                            html += html_into
+                    html = html.replace('\n',' ').replace('\t',' ').replace('  ',' ').replace('  ',' ')
+                    html = html.replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ')
+                    html = html.replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ')
+                    html += '</body></html>'
+                    read_cursor = self.dbconn.cursor()
+                    read_cursor.execute('SELECT msg_id FROM peoples WHERE mamba_id = %s', (mamba_id,))
+                    row_msg = read_cursor.fetchall()
+                    if len(row_msg) > 0:
+                        if row_msg[0][0] == None:
+                            sql = 'UPDATE peoples SET msg_id = %s WHERE mamba_id = %s'
+                            write_cursor = self.dbconn.cursor()
+                            aa = p(d=self.drv, f='p', **B['anketa-btn'])
+                            ab = aa.split('uid=')[1]
+                            write_cursor.execute(sql, (ab, mamba_id))
+                            self.dbconn.commit()
                     wj(self.drv)
                     wr()
                     back = p(d=self.drv, f='c', **B['back-find'])

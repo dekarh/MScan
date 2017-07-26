@@ -39,7 +39,10 @@ B = {
                                   '/..', 'a': 'href'},
     'tiles-onln': {'t': 'x', 's': '//I[@class="icn icn-circleOnline-small icn-small info-online js-info-online show"]'
                                   '/..', 'a': 'href'},
-   'anketa-html': {'t': 'x', 's': '//DIV[@id="Anketa"]', 'a': 'outerHTML'},
+  'anketa-about': {'t': 'x', 's': '//DIV[@class="b-anketa_inset b-anketa_inset-info"]', 'a': 'outerHTML'},
+   'anketa-msg' : {'t': 'x', 's': '//DIV[@class="b-profile-cloud-inner__message alien"]', 'a': 'text'},
+ 'anketa-favour': {'t': 'x', 's': '//DIV[@class="in clearFix"]', 'a': 'text'},
+    'anketa-btn': {'t': 'x', 's': '//A[@class="button button-blue first  _openChateg "]', 'a': 'href'},
     'back-find' : {'t': 'x', 's': '//A[@class="widget-title js-widget-title"][text()="Результаты поиска"]'},
 
 
@@ -167,6 +170,7 @@ PEOPLE = [
     'Недалекая',
     'Нет КПД',
     'Не верит',
+    'Нет места',
     'Неизвестная',
     'Услышала',
     'Проводник',
