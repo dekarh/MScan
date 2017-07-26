@@ -66,25 +66,44 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.setup_tableWidget()
         return
 
-    def click_pbPeopleFilter(self):  # Ненужная кнопка, все фильтруется по смене любого combobox'а
+    def click_pbPeopleFilter(self):  # Применить фильтр
         self.setup_tableWidget()
+        return
+
+    def click_checkBoxFiiled(self):
+        self.setup_tableWidget()
+        return
 
     def setup_tableWidget(self):
         self.tableWidget.setColumnCount(0)
         self.tableWidget.setRowCount(0)        # Кол-во строк из таблицы
         read_cursor = self.dbconn.cursor()
-        if self.stStatus == 2:
-            read_cursor.execute('SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id,'
-                                ' mamba_id, t_people, t_link, html, foto, history FROM peoples WHERE t_link >= %s'
-                                ' AND t_link <= %s AND t_people >= %s AND t_people <= %s AND html IS NOT NULL '
-                                'ORDER BY age DESC;',
-                                (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo))
+        if self.checkBoxFiiled.isChecked():
+            sql_append = 'AND html IS NOT NULL ORDER BY age DESC;'
         else:
-            read_cursor.execute('SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, '
-                                'mamba_id, t_people, t_link, html, foto, history FROM peoples WHERE t_link >= %s '
-                                'AND t_link <= %s AND t_people >= %s  AND t_people <= %s AND status = %s '
-                                'AND html IS NOT NULL ORDER BY age DESC;',
-                                (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo, self.stStatus))
+            sql_append = 'ORDER BY age DESC;'
+        if self.stStatus < 2 and len(s(self.leFilter.text())) > 4:
+            sql = 'SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,' \
+                  ' t_people, t_link, html, foto, history FROM peoples WHERE t_link >= %s AND t_link <= %s ' \
+                  'AND t_people >= %s  AND t_people <= %s AND status = %s AND mamba_id = %s ' + sql_append
+            read_cursor.execute(sql, (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo,
+                                      self.stStatus, s(self.leFilter.text())))
+        elif self.stStatus > 1 and len(s(self.leFilter.text())) > 4:
+            sql = 'SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,' \
+                  ' t_people, t_link, html, foto, history FROM peoples WHERE t_link >= %s AND t_link <= %s ' \
+                  'AND t_people >= %s  AND t_people <= %s AND mamba_id = %s ' + sql_append
+            read_cursor.execute(sql, (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo,
+                                      s(self.leFilter.text())))
+        elif self.stStatus < 2 and len(s(self.leFilter.text())) < 5:
+            sql = 'SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,' \
+                  ' t_people, t_link, html, foto, history FROM peoples WHERE t_link >= %s AND t_link <= %s ' \
+                  'AND t_people >= %s  AND t_people <= %s AND status = %s ' + sql_append
+            read_cursor.execute(sql, (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo, self.stStatus))
+        else:
+            sql = 'SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, mamba_id, ' \
+                  't_people, t_link, html, foto, history FROM peoples WHERE t_link >= %s AND t_link <= %s AND ' \
+                  't_people >= %s AND t_people <= %s ' + sql_append
+            read_cursor.execute(sql, (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo))
 
         rows = read_cursor.fetchall()
         self.tableWidget.setColumnCount(3)             # Устанавливаем кол-во колонок
@@ -141,6 +160,10 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         pixmap.loadFromData(self.foto[self.id_tek],'JPG')
         self.label_3.setPixmap(pixmap)
         self.anketa_html.setHtml(self.html[self.id_tek])
+        if self.msg_id[self.id_tek] == None:
+            self.pbToMessage.setEnabled(False)
+        else:
+            self.pbToMessage.setEnabled(True)
         return None
 
     def click_cbLink(self):
@@ -156,6 +179,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             self.textEdit.setText(s(self.histories[self.id_tek]) + datetime.now().strftime("%d.%m.%y") +
                               ' этап-> ' +  s(self.cbLink.currentText()))
         self.updateHistory()
+        return
 
 
     def click_cbPeople(self):
@@ -171,22 +195,27 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             self.textEdit.setText(s(self.histories[self.id_tek]) + datetime.now().strftime("%d.%m.%y") +
                               ' чел.-> ' +  self.cbPeople.currentText())
         self.updateHistory()
+        return
 
     def click_cbLinkFrom(self):
         self.stLinkFrom = self.cbLinkFrom.currentIndex()
         self.setup_tableWidget()
+        return
 
     def click_cbLinkTo(self):
         self.stLinkTo = self.cbLinkTo.currentIndex()
         self.setup_tableWidget()
+        return
 
     def click_cbStatus(self):
         self.stStatus = self.cbStatus.currentIndex()
         self.setup_tableWidget()
+        return
 
     def click_cbPeopleFrom(self):
         self.stPeopleFrom = self.cbPeopleFrom.currentIndex()
         self.setup_tableWidget()
+        return
 
     def click_cbPeopleTo(self):
         self.stPeopleTo = self.cbPeopleTo.currentIndex()
@@ -203,6 +232,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             write_cursor.execute('UPDATE peoples SET history = %s WHERE id = %s', (current, self.id_tek))
             self.dbconn.commit()
             self.histories[self.id_tek] = current
+        return
 
     def convert_mamba_id(self, href):
         a = "".join([k.strip() for k in href]).strip()
@@ -236,7 +266,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                 mamba_id = self.convert_mamba_id(mamba_href)
                 row_ch = []
                 read_cursor = self.dbconn.cursor()
-                read_cursor.execute('SELECT mamba_id, html FROM peoples WHERE mamba_id = %s', (mamba_id,))
+                read_cursor.execute('SELECT id, html FROM peoples WHERE mamba_id = %s', (mamba_id,))
                 row_ch = read_cursor.fetchall()
                 refresh_html = False  # анкета сохранена в базе?
                 if len(row_ch) > 0:
@@ -266,6 +296,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                     html += '</body></html>'
                     read_cursor = self.dbconn.cursor()
                     read_cursor.execute('SELECT msg_id FROM peoples WHERE mamba_id = %s', (mamba_id,))
+                    self.html[row_ch[0][0]] = html
                     row_msg = read_cursor.fetchall()
                     if len(row_msg) > 0:
                         if row_msg[0][0] == None:
@@ -291,6 +322,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             page += 1
             q = 0
         q = 0
+        return
 
     def click_pbReLogin(self):
         self.drv.quit()
@@ -298,6 +330,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.drv.implicitly_wait(5)  # Неявное ожидание - ждать ответа на каждый запрос до 5 сек
         authorize(self.drv, **self.webconfig)  # Авторизация
         wj(self.drv)
+        return
 
 
     def click_pbRefresh(self):                                  # Обновление статусов
@@ -457,10 +490,61 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             page += 1
             q=0
         q = 0
+        return
 
 
     def click_pbToAnketa(self):
-        q=0
+        aa = 'https://www.mamba.ru/' + self.mamba_id[self.id_tek]
+        self.drv.get(url=aa)
+        return
 
     def click_pbToMessage(self):
-        q=0
+        aa = 'https://www.mamba.ru/my/message.phtml?uid=' + self.msg_id[self.id_tek]
+        self.drv.get(url=aa)
+        return
+
+    def click_pbGetHTML(self):
+        mamba_id_there = self.convert_mamba_id(self.drv.current_url)
+        if len(mamba_id_there.split('#')) > 1:
+            mamba_id_there = mamba_id_there.split('#')[0]
+        if len(mamba_id_there.split('&')) > 1:
+            mamba_id_there = mamba_id_there.split('&')[0]
+        if len(mamba_id_there.split('?')) > 1:
+            mamba_id_there = mamba_id_there.split('?')[0]
+        read_cursor = self.dbconn.cursor()
+        read_cursor.execute('SELECT id FROM peoples WHERE mamba_id = %s', (mamba_id_there,))
+        row_row = read_cursor.fetchall()
+        if len(row_row) > 0:
+            wj(self.drv)
+            html_msg = p(d=self.drv, f='p', **B['anketa-msg'])
+            html_favour = p(d=self.drv, f='p', **B['anketa-favour'])
+            html_abouts = p(d=self.drv, f='ps', **B['anketa-about'])
+            html = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/' \
+                   'strict.dtd"><html><head></head><body><p>' + html_msg + '</p><p>'
+            html += html_favour.replace('\n', ' | ') + '</p>'
+            if len(html_abouts) > 0:
+                for html_into in html_abouts:
+                    html += html_into
+            html = html.replace('\n', ' ').replace('\t', ' ').replace('  ', ' ').replace('  ', ' ')
+            html = html.replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ')
+            html = html.replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ')
+            html += '</body></html>'
+            self.html[row_row[0][0]] = html
+            sql = 'UPDATE peoples SET html = %s WHERE mamba_id = %s'
+            write_cursor = self.dbconn.cursor()
+            write_cursor.execute(sql, (html, mamba_id_there))
+            self.dbconn.commit()
+            read_cursor = self.dbconn.cursor()
+            read_cursor.execute('SELECT msg_id FROM peoples WHERE mamba_id = %s', (mamba_id_there,))
+            row_msg = read_cursor.fetchall()
+            if len(row_msg) > 0:
+                if row_msg[0][0] == None:
+                    sql = 'UPDATE peoples SET msg_id = %s WHERE mamba_id = %s'
+                    write_cursor = self.dbconn.cursor()
+                    aa = p(d=self.drv, f='p', **B['anketa-btn'])
+                    ab = aa.split('uid=')[1]
+                    write_cursor.execute(sql, (ab, mamba_id_there))
+                    self.dbconn.commit()
+            wj(self.drv)
+        return
+

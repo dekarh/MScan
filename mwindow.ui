@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>798</width>
-    <height>889</height>
+    <width>772</width>
+    <height>953</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -54,29 +54,9 @@
            </property>
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_2">
-              <item>
-               <widget class="QComboBox" name="cbLinkFrom"/>
-              </item>
-              <item>
-               <widget class="QLabel" name="label_2">
-                <property name="text">
-                 <string>&lt;---ОТ    Этап    ДО---&gt;</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QComboBox" name="cbLinkTo"/>
-              </item>
-             </layout>
-            </item>
-            <item>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
               <item>
-               <widget class="QComboBox" name="cbStatus">
+               <widget class="QLineEdit" name="leFilter">
                 <property name="minimumSize">
                  <size>
                   <width>150</width>
@@ -108,7 +88,7 @@
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>120</width>
+                  <width>110</width>
                   <height>0</height>
                  </size>
                 </property>
@@ -131,17 +111,34 @@
                </spacer>
               </item>
               <item>
-               <widget class="QLabel" name="label_4">
+               <widget class="QComboBox" name="cbStatus">
                 <property name="minimumSize">
                  <size>
                   <width>150</width>
                   <height>0</height>
                  </size>
                 </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QComboBox" name="cbLinkFrom"/>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_2">
                 <property name="text">
-                 <string/>
+                 <string>&lt;---ОТ    Этап    ДО---&gt;</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
                 </property>
                </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="cbLinkTo"/>
               </item>
              </layout>
             </item>
@@ -205,6 +202,26 @@
              </widget>
             </item>
             <item>
+             <spacer name="horizontalSpacer_4">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBoxFiiled">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
              <spacer name="horizontalSpacer">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
@@ -218,16 +235,9 @@
              </spacer>
             </item>
             <item>
-             <widget class="QPushButton" name="pbToAnketa">
+             <widget class="QPushButton" name="pbGetHTML">
               <property name="text">
-               <string>В анкету</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="pbToMessage">
-              <property name="text">
-               <string>Сообщение</string>
+               <string>Get HTML</string>
               </property>
              </widget>
             </item>
@@ -296,10 +306,44 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QComboBox" name="cbLink"/>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <widget class="QComboBox" name="cbLink"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pbToAnketa">
+            <property name="maximumSize">
+             <size>
+              <width>90</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>В анкету</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
-         <widget class="QComboBox" name="cbPeople"/>
+         <layout class="QHBoxLayout" name="horizontalLayout_8">
+          <item>
+           <widget class="QComboBox" name="cbPeople"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pbToMessage">
+            <property name="maximumSize">
+             <size>
+              <width>90</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Сообщение</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
          <widget class="QLabel" name="label_3">
