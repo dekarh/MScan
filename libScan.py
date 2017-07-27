@@ -43,7 +43,9 @@ B = {
    'anketa-msg' : {'t': 'x', 's': '//DIV[@class="b-profile-cloud-inner__message alien"]', 'a': 'text'},
  'anketa-favour': {'t': 'x', 's': '//DIV[@class="in clearFix"]', 'a': 'text'},
     'anketa-btn': {'t': 'x', 's': '//A[@class="button button-blue first  _openChateg "]', 'a': 'href'},
+'anketa-locator': {'t': 'x', 's': '//SPAN[@class="info info-misc__distance"]', 'a': 'text'},
     'back-find' : {'t': 'x', 's': '//A[@class="widget-title js-widget-title"][text()="Результаты поиска"]'},
+
 
 
     'menuRegs'  : {'t': 'x', 's': '(//SPAN[@class="controls-DropdownList__text"])[1]'},

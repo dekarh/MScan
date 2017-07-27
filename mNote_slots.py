@@ -283,9 +283,10 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                     wj(self.drv)
                     html_msg = p(d=self.drv, f='p', **B['anketa-msg'])
                     html_favour = p(d=self.drv, f='p', **B['anketa-favour'])
+                    html_locator = p(d=self.drv, f='p', **B['anketa-locator'])
                     html_abouts = p(d=self.drv, f='ps', **B['anketa-about'])
                     html = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/' \
-                           'strict.dtd"><html><head></head><body><p>' + html_msg + '</p><p>'
+                           'strict.dtd"><html><head></head><body><p>' + html_msg + '</p><h3>' + html_locator + '</h3><p>'
                     html += html_favour.replace('\n',' | ') + '</p>'
                     if len(html_abouts) > 0:
                         for html_into in html_abouts:
@@ -321,7 +322,6 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                     continue
             page += 1
             q = 0
-        q = 0
         return
 
     def click_pbReLogin(self):
@@ -519,8 +519,9 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             html_msg = p(d=self.drv, f='p', **B['anketa-msg'])
             html_favour = p(d=self.drv, f='p', **B['anketa-favour'])
             html_abouts = p(d=self.drv, f='ps', **B['anketa-about'])
+            html_locator = p(d=self.drv, f='p', **B['anketa-locator'])
             html = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/' \
-                   'strict.dtd"><html><head></head><body><p>' + html_msg + '</p><p>'
+                   'strict.dtd"><html><head></head><body><p>' + html_msg + '</p><h3>' + html_locator + '</h3><p>'
             html += html_favour.replace('\n', ' | ') + '</p>'
             if len(html_abouts) > 0:
                 for html_into in html_abouts:
@@ -530,6 +531,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             html = html.replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ')
             html += '</body></html>'
             self.html[row_row[0][0]] = html
+            self.anketa_html.setHtml(html)
             sql = 'UPDATE peoples SET html = %s WHERE mamba_id = %s'
             write_cursor = self.dbconn.cursor()
             write_cursor.execute(sql, (html, mamba_id_there))
