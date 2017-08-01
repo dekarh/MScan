@@ -148,10 +148,14 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
 
         # делаем ресайз колонок по содержимому
         self.tableWidget.resizeColumnsToContents()
+        self.click_tableWidget()
         return
 
-    def click_tableWidget(self, index):
-        self.updateHistory()
+    def click_tableWidget(self, index=None):
+        if index == None:
+            index = self.tableWidget.model().index(0, 0)
+        else:
+            self.updateHistory()
         self.id_tek = self.id_all[index.row()]
         self.textEdit.setText(self.histories[self.id_tek])
         self.cbLink.setCurrentIndex(self.t_link[self.id_tek])
@@ -547,6 +551,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                     ab = aa.split('uid=')[1]
                     write_cursor.execute(sql, (ab, mamba_id_there))
                     self.dbconn.commit()
+                    self.msg_id[mamba_id_there] = ab
             wj(self.drv)
         return
 
