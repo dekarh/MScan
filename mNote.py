@@ -38,7 +38,7 @@ class MainWindow(MainWindowSlots):
         self.pbToAnketa.clicked.connect(self.click_pbToAnketa)
         self.pbToMessage.clicked.connect(self.click_pbToMessage)
         self.pbGetHTML.clicked.connect(self.click_pbGetHTML)
-        self.checkBoxFiiled.clicked.connect(self.click_checkBoxFiiled)
+        self.cbHTML.activated[str].connect(self.click_cbHTML)
         return None
 
 if __name__ == '__main__':

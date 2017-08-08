@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(772, 953)
+        Form.resize(798, 953)
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(Form)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.widget_3 = QtWidgets.QWidget(Form)
@@ -119,10 +119,9 @@ class Ui_Form(object):
         self.horizontalLayout_4.addWidget(self.pbScan)
         spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem2)
-        self.checkBoxFiiled = QtWidgets.QCheckBox(self.frame_2)
-        self.checkBoxFiiled.setText("")
-        self.checkBoxFiiled.setObjectName("checkBoxFiiled")
-        self.horizontalLayout_4.addWidget(self.checkBoxFiiled)
+        self.cbHTML = QtWidgets.QComboBox(self.frame_2)
+        self.cbHTML.setObjectName("cbHTML")
+        self.horizontalLayout_4.addWidget(self.cbHTML)
         spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem3)
         self.pbGetHTML = QtWidgets.QPushButton(self.frame_2)

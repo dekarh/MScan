@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>772</width>
+    <width>798</width>
     <height>953</height>
    </rect>
   </property>
@@ -215,11 +215,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QCheckBox" name="checkBoxFiiled">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
+             <widget class="QComboBox" name="cbHTML"/>
             </item>
             <item>
              <spacer name="horizontalSpacer">

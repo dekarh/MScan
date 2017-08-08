@@ -5,7 +5,7 @@ from PyQt5.QtCore import QDate, QDateTime, QSize, Qt, QByteArray
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTableWidget, QTableWidgetItem
 from os import popen
-from libScan import read_config, LINK, PEOPLE, ONLINE, s, authorize, p, B, wj, wr
+from libScan import read_config, LINK, PEOPLE, ONLINE, ISHTML, s, authorize, p, B, wj, wr
 import urllib.request
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -44,7 +44,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.foto = {}
         self.history = ''
         self.histories = {}
-        self.stLinkFrom = 0
+        self.stLinkFrom = 2
         self.cbLinkFrom.addItems(LINK)
         self.cbLinkFrom.setCurrentIndex(self.stLinkFrom)
         self.stLinkTo = 7
@@ -63,6 +63,8 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.cbPeople.setCurrentIndex(0)
         self.cbLink.addItems(LINK)
         self.cbLink.setCurrentIndex(6)
+        self.cbHTML.addItems(ISHTML)
+        self.cbHTML.setCurrentIndex(2)
         self.setup_tableWidget()
         return
 
@@ -70,7 +72,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.setup_tableWidget()
         return
 
-    def click_checkBoxFiiled(self):
+    def click_cbHTML(self):
         self.setup_tableWidget()
         return
 
@@ -78,8 +80,10 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.tableWidget.setColumnCount(0)
         self.tableWidget.setRowCount(0)        # Кол-во строк из таблицы
         read_cursor = self.dbconn.cursor()
-        if self.checkBoxFiiled.isChecked():
+        if self.cbHTML.currentIndex() == 1:
             sql_append = 'AND html IS NOT NULL ORDER BY age DESC;'
+        elif self.cbHTML.currentIndex() == 0:
+            sql_append = 'AND html IS NULL ORDER BY age DESC;'
         else:
             sql_append = 'ORDER BY age DESC;'
         if self.stStatus < 2 and len(s(self.leFilter.text())) > 4:
@@ -241,6 +245,10 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
     def convert_mamba_id(self, href):
         a = "".join([k.strip() for k in href]).strip()
         m_id = a[21:].split("?")[0]
+        if len(m_id.split('#')) > 1:
+            m_id = m_id.split('#')[0]
+        if len(m_id.split('&')) > 1:
+            m_id = m_id.split('&')[0]
         print(a, a[21:], m_id)
         return m_id
 
@@ -480,20 +488,24 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                     for status_href in hrefs_onln:
                         if self.convert_mamba_id(status_href) == mamba_id:
                             status = 1
-                    statuses.append((status, mamba_id))
+                            statuses.append((status, mamba_id))
             if len(outs) > 0:
                 sql = 'INSERT INTO peoples(mamba_id, msg_id, her_name, age, status, foto) VALUES (%s,%s,%s,%s,%s,%s)'
                 write_cursor = self.dbconn.cursor()
                 write_cursor.executemany(sql, outs)
                 self.dbconn.commit()
             if len(statuses) > 0:
-                sql = 'UPDATE peoples SET status = %s WHERE mamba_id = %s'
+                sql = 'UPDATE peoples SET status = %s, access_date = NOW() WHERE mamba_id = %s'
                 write_cursor = self.dbconn.cursor()
                 write_cursor.executemany(sql, statuses)
                 self.dbconn.commit()
+            else:
+                self.setup_tableWidget()
+                return
             page += 1
             q=0
         q = 0
+        self.setup_tableWidget()
         return
 
 
