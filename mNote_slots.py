@@ -69,6 +69,9 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         return
 
     def click_pbPeopleFilter(self):  # Применить фильтр
+        a = self.leFilter.text()
+        if a[:4] == 'http':
+            self.leFilter.setText(self.convert_mamba_id(a))
         self.setup_tableWidget()
         return
 

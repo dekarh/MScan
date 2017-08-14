@@ -45,115 +45,13 @@ B = {
     'anketa-btn': {'t': 'x', 's': '//A[@class="button button-blue first  _openChateg "]', 'a': 'href'},
 'anketa-locator': {'t': 'x', 's': '//SPAN[@class="info info-misc__distance"]', 'a': 'text'},
     'back-find' : {'t': 'x', 's': '//A[@class="widget-title js-widget-title"][text()="Результаты поиска"]'},
-
-
-
-    'menuRegs'  : {'t': 'x', 's': '(//SPAN[@class="controls-DropdownList__text"])[1]'},
-    'menuCats'  : {'t': 'x', 's': '(//SPAN[@class="controls-DropdownList__text"])[2]'},
-    'firms_x'   : {'t': 'x', 's': '//DIV[@class="Contragents-CommonRenders__InnCorner '
-                                                    'Contragents-CommonRenders__Inn ws-ellipsis"]'},
-    'firms_tr'  : {'t': 'x', 's': '//DIV[@sbisname="contragentsBrowser"]//TR[@data-id]'},
-    'firms_trA' : {'t': 'x', 's': '//SPAN[@class="Contragents-CommonRenders__Name"]/../../../../..', 'a': 'data-id'},
-    'data_id'   : {'t': 'x', 's': '//TR[@class="controls-DataGridView__tr controls-ListView__item '
-                                                          'js-controls-ListView__item"][@data-id="'},
-    'data_idA'  : {'t': 'x', 's': '//TR[@class="controls-DataGridView__tr controls-ListView__item '
-                                    'js-controls-ListView__item"][@data-id="', 'a' : 'data-id'},
-    'close'     : {'t': 'x', 's': '//DIV[@class="sbisname-window-title-close ws-button-classic ws-component '
-                        'ws-control-inactive ws-enabled ws-field-button ws-float-close-right ws-no-select"]'},
-    'first'     : {'t': 'x', 's': '(//I[@sbisname="PagingBegin"])[1]'},
-    'next'      : {'t': 'x', 's': '(//I[@sbisname="PagingNext"])[1]'},
-    'prev'      : {'t': 'x', 's': '(//I[@sbisname="PagingPrev"])[1]'},
-    'innA'      : {'t': 'x', 's': '//INPUT[@name="СтрокаИНН"]', 'a' : 'value'},
-    'kppA'      : {'t': 'x', 's': '//INPUT[@name="СтрокаКПП"]', 'a': 'value'},
-    'familyA'   : {'t': 'x', 's': '//INPUT[@name="СтрокаФамилия"]', 'a': 'value'},
-    'nameA'     : {'t': 'x', 's': '//INPUT[@name="СтрокаИмя"]', 'a': 'value'},
-    'surnameA'  : {'t': 'x', 's': '//INPUT[@name="СтрокаОтчество"]', 'a': 'value'},
-'firm_full_nameA':{'t': 'x', 's': '//INPUT[@name="СтрокаПолноеНазвание"]', 'a': 'value'},
-   'act_num1000': {'t': 'x', 's': '//DIV[@class="custom-select-option"][@value="1000"]'},
-    'about'     : {'t': 'x', 's': '//SPAN[@class="ContragentCard_RightAccordion-content"][text()="О компании"]'},
-    'contacts'  : {'t': 'x', 's': '//SPAN[@class="ContragentCard_RightAccordion-content"][text()="Контактные данные"]'},
-    'rekv'      : {'t': 'x', 's': '//SPAN[@class="ContragentCard_RightAccordion-content"][text()="Реквизиты"]'},
-    'owners'    : {'t': 'x', 's': '//SPAN[@class="ContragentCard_RightAccordion-content"][text()="Владельцы"]'},
-    'summA'     : {'t': 'x', 's': '//SPAN[@class="Contragents-ContragentCardRatingBanner__title-Revenue  '
-                                  'ctrg-subseparator"][text()="Выручка: "]/SPAN', 'a': 'text'},
-    'costA'     : {'t': 'x', 's': '//SPAN[@class="Contragents-ContragentCardRatingBanner__title-Cost  '
-                                  'ctrg-subseparator"][text()="Стоимость бизнеса: "]/SPAN', 'a': 'text'},
-    'rat_sumA'  : {'t': 'x', 's': '//DIV[@class="ctrg-half-left"]//DIV[@class="Contragents-'
-                                  'ContragentCardRatingBanner__positions"]/DIV/SPAN', 'a': 'title'},
-    'rat_costA' : {'t': 'x', 's': '//DIV[@class="ctrg-half-right"]//DIV[@class="Contragents-'
-                                  'ContragentCardRatingBanner__positions"]/DIV/SPAN', 'a': 'title'},
-    'phonesA'   : {'t': 'x', 's': '//DIV[@sbisname="Таблица телефонов"]//DIV[@class="crm-phone-number crm-noicon '
-                                  'ContragentCardPhones-Ellipsis"]', 'a': 'text'},
-   'phones_typA': {'t': 'x', 's': '//DIV[@sbisname="Таблица телефонов"]//SPAN[@class="crm-phone-comment '
-                                  'ContragentCardPhones-Ellipsis"]', 'a': 'text'},
-         'warnA': {'t': 'x', 's': '//DIV[@sbisname="Реестры"]//DIV[@class="Contragents-ContragentCardIndicators'
-                                  '__itemTitle "]//SPAN[@data-component="SBIS3.CONTROLS.Link"]', 'a': 'text'},
-    'warn_dataA': {'t': 'x', 's': '//DIV[@sbisname="Реестры"]//DIV[@class="Contragents-ContragentCardIndicators_'
-                                  '_listItemFooter"]//SPAN[@data-component="SBIS3.CONTROLS.Link"]', 'a': 'text'},
-    'filialsA'  : {'t': 'x', 's': '//DIV[@sbisname="Таблица филиалов"]//DIV[@title]', 'a': 'text'},
-    'ogrnA'     : {'t': 'x', 's': '//DIV[@sbisname="СтрокаОГРН"]//SPAN[@title]', 'a': 'text'},
-    'okpoA'     : {'t': 'x', 's': '//DIV[@sbisname="СтрокаОКПО"]//SPAN[@title]', 'a': 'text'},
-    'oktmoA'    : {'t': 'x', 's': '//DIV[@sbisname="СтрокаОКТМО"]//SPAN[@title]', 'a': 'text'},
-    'reg_N_pfrA': {'t': 'x', 's': '//DIV[@sbisname="СтрокаРегНомерПФ"]//SPAN[@title]', 'a': 'text'},
-    'reg_comp'  : {'t': 'x', 's': '//DIV[@class="ContragentCardRegistration-Data"]', 'a': 'text'},
-    'reg_org'   : {'t': 'x', 's': '//DIV[@class="ContragentCardRegistrationGosOrg-Data"]', 'a': 'text'},
-    'uchred'    : {'t': 'x', 's': '//DIV[@sbisname="brwУчредители"]//DIV[@class="ws-browser-cell-paddings"]'
-                                  '/DIV[@title]', 'a': 'title'},
-    'uchredsA'  : {'t': 'x', 's': '//DIV[@sbisname="brwУчредители"]//TR[@rowkey]', 'a': 'rowkey'},
- 'uchred_innAD' : {'t': 'x', 's': '//DIV[@sbisname="brwУчредители"]//TR[@rowkey="', 'a': 'text',
-                                  'e' :'//SPAN[@class="Contragents-ContragentCardPersons__Inn"]'},
-   'uchred_%AD' : {'t': 'x', 's': '//DIV[@sbisname="brwУчредители"]//TR[@rowkey="', 'a': 'text',
-                                  'e': '//DIV[@class="Contragents-ContragentCardPersons__cellSharePercentage"]'},
-'uchred_nameAD' : {'t': 'x', 's': '//DIV[@sbisname="brwУчредители"]//TR[@rowkey="', 'a': 'text',
-                                  'e': '//DIV[@class="ws-ellipsis"]/SPAN[not(@class)]'},
-    'dochki'    : {'t': 'x', 's': '//DIV[@sbisname="brwДочерниеКомпании"]//DIV[@class="ws-browser-cell-paddings"]'
-                                  '/DIV[@title]', 'a': 'title'},
-    'inn_spisA' : {'t': 'x', 's': '//DIV[@sbisname="contragentsBrowser"]//DIV[@class="Contragents-CommonRenders_'
-                                  '_InnCorner Contragents-CommonRenders__Inn ws-ellipsis"]', 'a': 'text'},
-    'search'    : {'t': 'x', 's': '//DIV[@sbisname="strSearch"]//INPUT'},
-    'search_reg': {'t': 'x', 's': '//INPUT[@placeholder="Код или название региона"]'},
- 'cats_all_link': {'t': 'x', 's': '//DIV[@class="controls-DropdownList__buttonsBlock"]//SPAN[text()="Еще..."]'},
-    'okved-tab' : {'t': 'x', 's': '//DIV[@data-component="SBIS3.CONTROLS.TabButton"][@data-id="ОКВЭД"]'},
-    'sbis-tab'  : {'t': 'x', 's': '//DIV[@data-component="SBIS3.CONTROLS.TabButton"][@data-id="Категории"]'},
-   'okved-listA': {'t': 'x', 's': '//DIV[@sbisname="okvedSelector"]//TR[@data-id]//DIV[@title]', 'a': 'title'},
-   'okved-listD': {'t': 'x', 's': '//DIV[@sbisname="okvedSelector"]//TR[@data-id]//DIV[@title="'},
-    'sbis-listA': {'t': 'x', 's': '//DIV[@sbisname="vdSelector"]//TR[@data-id]//DIV[text()]', 'a': 'text'},
-    'sbis-listD': {'t': 'x', 's': '//DIV[@sbisname="vdSelector"]//TR[@data-id]//DIV[text()="'},
-    'more_uchr' : {'t': 'x', 's': '//DIV[@sbisname="btnЕщеУчредители"]'},
-
-    'cats'      : {'t': 'c', 's': 'controls-DropdownList__item-text'},
-    'firms_c'   : {'t': 'c', 's': 'controls-DataGridView__tr'},
-   'ch_surnameA': {'t': 'c', 's': 'Contragents-ContragentCard__Chief__surname', 'a': 'text'},
-    'ch_nameA'  : {'t': 'c', 's': 'Contragents-ContragentCard__Chief__name', 'a': 'text'},
-    'ch_titleA' : {'t': 'c', 's': 'Contragents-ContragentCard__Chief__title', 'a': 'text'},
-    'gen_infoA' : {'t': 'c', 's': 'Contragents-ContragentCardGeneralInfo__State', 'a': 'text'},
-    'act_link'  : {'t': 'c', 's': 'Contragents-ContragentCardGeneralInfo__ActivityTypes__title'},
-  'act_by_count': {'t': 'c', 's': 'custom-select-text'},
-    'acts'      : {'t': 'c', 's': 'ws-browser-table-row'},
-    'act_numA'  : {'t': 'c', 's': 'Contragents-ContragentCardGeneralInfo__ActivityTypes__counter', 'a': 'text'},
-    'emp_qtyA'  : {'t': 'c', 's': 'Contragents-ContragentCard__EmployeesQuantity__qty', 'a': 'text'},
-    'addressA'  : {'t': 'c', 's': 'ContragentCardAddresses-blackLink', 'a': 'text'},
-    'predstavA' : {'t': 'c', 's': 'user-info-cell', 'a': 'text'},
-    'reg_filter': {'t': 'c', 's': 'Clrs__regionSelectorItemName'},
-
 }
 
-propusk = ['-', 'aoзт', 'а', 'автономн%', 'администрац%', 'ао', 'ассоциац%', 'астрахан%', 'агентств%',
-           'база', 'бутик', 'бюро', 'в', 'г', 'групп', 'группа', 'дом', 'дополнительн%', 'завод',
-           'и', 'или', 'институ%', 'информацион%', 'ип',
-           'кафе', 'кировск%', 'клиника', 'комбинат', 'комитет', 'коммерческ%', 'компан%', 'комплекс', 'кондитерск%',
-           'консалтин%'
-           'ленинск%', 'ломбард', 'магази%', 'мастерск%', 'миграц%', 'мир', 'многопрофильн%', 'муниципальн%',
-           'на', 'научно-исследовательск%', 'некоммерческ%',
-           'оао', 'област%', 'образован%', 'обществен%', 'общество', 'объединен%', 'ограниченной', 'оказан%', 'ооо',
-           'организац%', 'от', 'ответственностью', 'отделен%', 'охранн%',
-           'пао', 'плюс', 'по', 'портал', 'под', 'помощ%', 'поселок', 'предприят%', 'производствен%', 'профессиональн%',
-           'рабочий', 'ремонтн%', 'российск%', 'рф',
-           'с', 'сеть', 'сервиc', 'служб%', 'советск%', 'строительн%', 'субфилиал', 'специализирован%',
-           'терминал', 'торгов%', 'транспортн%', 'трусовск%',
-           'управление', 'управляющ%', 'участок', 'фабрик%', 'фармацевтическ%', 'филиал', 'фирм%', 'частн%',
-           'центр', 'цех', 'школ%', 'юридическ%'
-           ]
+
+#   'okved-listA': {'t': 'x', 's': '//DIV[@sbisname="okvedSelector"]//TR[@data-id]//DIV[@title]', 'a': 'title'},
+#   'okved-listD': {'t': 'x', 's': '//DIV[@sbisname="okvedSelector"]//TR[@data-id]//DIV[@title="'},
+
+
 LINK = [
     'Нет интереса',
     'Пара',
