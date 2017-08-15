@@ -435,6 +435,9 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             self.drv.switch_to.window(self.drv.window_handles[1])
         aa = 'https://www.mamba.ru/' + self.mamba_id[self.id_tek]
         self.drv.get(url=aa)
+        wj(self.drv)
+        if self.html[self.id_tek] == None:
+            self.click_pbGetHTML()
         return
 
     def click_pbToMessage(self):
