@@ -1,7 +1,7 @@
 from mwindow import Ui_Form
 from datetime import datetime
 from mysql.connector import MySQLConnection, Error
-from PyQt5.QtCore import QDate, QDateTime, QSize, Qt, QByteArray
+from PyQt5.QtCore import QDate, QDateTime, QSize, Qt, QByteArray, QTimer
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTableWidget, QTableWidgetItem
 from os import popen
@@ -22,6 +22,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         Ui_Form.setupUi(self,form)
 
         self.fillconfig = read_config(section='fill')
+        self.messages = read_config(section='messages')
         self.webconfig = read_config(section='web')
 
         self.drv = webdriver.Chrome()  # Инициализация драйвера
@@ -56,7 +57,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.stPeopleTo = 8
         self.cbPeopleTo.addItems(PEOPLE)
         self.cbPeopleTo.setCurrentIndex(self.stPeopleTo)
-        self.stStatus = 2
+        self.stStatus = 0
         self.cbStatus.addItems(ONLINE)
         self.cbStatus.setCurrentIndex(self.stStatus)
         self.cbPeople.addItems(PEOPLE)
@@ -66,6 +67,9 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.cbHTML.addItems(ISHTML)
         self.cbHTML.setCurrentIndex(2)
         self.setup_tableWidget()
+        self.myTimer = QTimer()
+        self.myTimer.start(300000)
+        self.refresh_started = False
         return
 
     def click_pbPeopleFilter(self):  # Применить фильтр
@@ -83,29 +87,21 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.tableWidget.setColumnCount(0)
         self.tableWidget.setRowCount(0)        # Кол-во строк из таблицы
         read_cursor = self.dbconn.cursor()
+        sql_append = ''
+        if self.stStatus == 0:
+            sql_append = 'AND DATE(access_date) >= DATE_SUB(NOW(), INTERVAL 3 DAY) '
         if self.cbHTML.currentIndex() == 1:
-            sql_append = 'AND html IS NOT NULL ORDER BY age DESC;'
+            sql_append += 'AND html IS NOT NULL ORDER BY age DESC;'
         elif self.cbHTML.currentIndex() == 0:
-            sql_append = 'AND html IS NULL ORDER BY age DESC;'
+            sql_append += 'AND html IS NULL ORDER BY age DESC;'
         else:
-            sql_append = 'ORDER BY age DESC;'
-        if self.stStatus < 2 and len(s(self.leFilter.text())) > 4:
-            sql = 'SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,' \
-                  ' t_people, t_link, html, foto, history FROM peoples WHERE t_link >= %s AND t_link <= %s ' \
-                  'AND t_people >= %s  AND t_people <= %s AND status = %s AND mamba_id = %s ' + sql_append
-            read_cursor.execute(sql, (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo,
-                                      self.stStatus, s(self.leFilter.text())))
-        elif self.stStatus > 1 and len(s(self.leFilter.text())) > 4:
+            sql_append += 'ORDER BY age DESC;'
+        if len(s(self.leFilter.text())) > 4:
             sql = 'SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,' \
                   ' t_people, t_link, html, foto, history FROM peoples WHERE t_link >= %s AND t_link <= %s ' \
                   'AND t_people >= %s  AND t_people <= %s AND mamba_id = %s ' + sql_append
             read_cursor.execute(sql, (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo,
                                       s(self.leFilter.text())))
-        elif self.stStatus < 2 and len(s(self.leFilter.text())) < 5:
-            sql = 'SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,' \
-                  ' t_people, t_link, html, foto, history FROM peoples WHERE t_link >= %s AND t_link <= %s ' \
-                  'AND t_people >= %s  AND t_people <= %s AND status = %s ' + sql_append
-            read_cursor.execute(sql, (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo, self.stStatus))
         else:
             sql = 'SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, mamba_id, ' \
                   't_people, t_link, html, foto, history FROM peoples WHERE t_link >= %s AND t_link <= %s AND ' \
@@ -263,7 +259,6 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
 
     def click_pbScan(self):
         self.drv.get(**self.fillconfig)  # Открытие страницы где поиск
-
         page = 1
         standart = len(p(d=self.drv, f='ps', **B['tiles']))
         while len(p(d=self.drv, f='ps', **B['tiles'])) == standart:
@@ -344,106 +339,30 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.drv = webdriver.Chrome()  # Инициализация драйвера
         self.drv.implicitly_wait(5)  # Неявное ожидание - ждать ответа на каждый запрос до 5 сек
         authorize(self.drv, **self.webconfig)  # Авторизация
+        self.refresh_started = False               # Выключаем автообновление
+        self.pbRefresh.setText('Обновить')
         wj(self.drv)
         return
 
 
-    def click_pbRefresh(self):                                  # Обновление статусов
-        """
-        self.drv.get(**self.fillconfig)  # Открытие страницы где поиск
+    def click_pbRefresh(self):                     # Включение автообновления
+        if self.refresh_started == False:
+            if len(self.drv.window_handles) < 2:
+                self.drv.execute_script('''window.open("about:blank", "_blank");''')
+                self.drv.switch_to.window(self.drv.window_handles[1])
+                self.drv.get(**self.messages)  # Открытие страницы где сообщения
+                self.drv.switch_to.window(self.drv.window_handles[0])
+            self.refresh_started = True
+            self.pbRefresh.setText('ОБНОВЛЯЮ')
+        else:
+            self.refresh_started = False
+            self.pbRefresh.setText('Обновить')
+        wj(self.drv)
 
-        page = 1
-        standart = len(p(d=self.drv, f='ps', **B['tiles']))
-        while len(p(d=self.drv, f='ps', **B['tiles'])) == standart:
-            outs = []
-            statuses = []
-            status_and_html = []
-            if page > 1:
-                page_link = self.drv.find_element_by_xpath('//DIV[@class="pager wrap"]//LI[text()="' + str(page) + '"]')
-                page_link.click()
-            tiles = []
-            tiles = p(d=self.drv, f='ps', **B['tiles'])
-            names = []
-            names = p(d=self.drv, f='ps', **B['tiles-name'])
-            hrefs = []
-            hrefs = p(d=self.drv, f='ps', **B['tiles-href'])
-            fotos_hrefs = []
-            fotos_hrefs = p(d=self.drv, f='ps', **B['tiles-img'])
-            hrefs_onln = []
-            hrefs_onln = p(d=self.drv, f='ps', **B['tiles-onln'])
-            for i, mamba_href in enumerate(hrefs):
-                mamba_id = self.convert_mamba_id(mamba_href)
-                row_ch = []
-                read_cursor = self.dbconn.cursor()
-                read_cursor.execute('SELECT mamba_id, html FROM peoples WHERE mamba_id = %s',(mamba_id,))
-                row_ch = read_cursor.fetchall()
-                refresh_html = False                                # анкета сохранена в базе?
-                if len(row_ch) > 0:
-                    if row_ch[0][1] == None:
-                        refresh_html = True
-                    elif len(row_ch[0][1]) < 10:
-                        refresh_html = True
-                else:
-                    refresh_html = True
-                if len(row_ch) < 1:                                 # такой записи нет в базе
-                    out = tuple()
-                    age = ('0',)
-                    if len(names[i].split(',')) > 1:
-                        age = (names[i].split(',')[1].strip(), )
-                    out += (mamba_id, ) + (self.convert_msg_id(mamba_id), ) + (names[i].split(',')[0].strip(), ) + age
-                    status = 0
-                    for status_href in hrefs_onln:
-                        if self.convert_mamba_id(status_href) == mamba_id:
-                            status = 1
-                    foto = urllib.request.urlopen(fotos_hrefs[i]).read()
-
-                    if refresh_html:
-                        q=0
-                    else:
-                        html = row_ch[0][1]
-                    out += (status, ) + (foto, ) + (html,)
-                    outs.append(out)
-                elif refresh_html:                                  # запись есть, а анкеты нет
-                    status = 0
-                    for status_href in hrefs_onln:
-                        if self.convert_mamba_id(status_href) == mamba_id:
-                            status = 1
-                    tiles[i].click()
-                    wj(self.drv)
-                    html = p(d=self.drv, f='p', **B['anketa-html'])
-                    wj(self.drv)
-                    wr()
-                    back = p(d=self.drv, f='c', **B['back-find'])
-                    wj(self.drv)
-                    back.click()
-                    status_and_html.append((status, html, mamba_id))
-
-                else:                                               # есть и запись и анкета
-                    status = 0
-                    for status_href in hrefs_onln:
-                        if self.convert_mamba_id(status_href) == mamba_id:
-                            status = 1
-                    statuses.append((status, mamba_id))
-            if len(status_and_html) > 0:
-                sql = 'UPDATE peoples SET status = %s, html = %s WHERE mamba_id = %s'
-                write_cursor = self.dbconn.cursor()
-                write_cursor.executemany(sql, status_and_html)
-                self.dbconn.commit()
-            if len(outs) > 0:
-                sql = 'INSERT INTO peoples(mamba_id, msg_id, her_name, age, status, foto, html) VALUES (%s,%s,%s,%s,%s,%s,%s)'
-                write_cursor = self.dbconn.cursor()
-                write_cursor.executemany(sql, outs)
-                self.dbconn.commit()
-            if len(statuses) > 0:
-                sql = 'UPDATE peoples SET status = %s WHERE mamba_id = %s'
-                write_cursor = self.dbconn.cursor()
-                write_cursor.executemany(sql, statuses)
-                self.dbconn.commit()
-            page += 1
-            q=0
-        q = 0
-        """
-
+    def refreshing(self):                           # Обновление статусов
+        if not self.refresh_started:
+            return
+        self.drv.switch_to.window(self.drv.window_handles[0])
         sql = 'UPDATE peoples SET status = %s WHERE id > 0'     # Сначала всех в оффлайн
         write_cursor = self.dbconn.cursor()
         write_cursor.execute(sql, (0,))
@@ -511,18 +430,23 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.setup_tableWidget()
         return
 
-
     def click_pbToAnketa(self):
+        if self.refresh_started:
+            self.drv.switch_to.window(self.drv.window_handles[1])
         aa = 'https://www.mamba.ru/' + self.mamba_id[self.id_tek]
         self.drv.get(url=aa)
         return
 
     def click_pbToMessage(self):
+        if self.refresh_started:
+            self.drv.switch_to.window(self.drv.window_handles[1])
         aa = 'https://www.mamba.ru/my/message.phtml?uid=' + self.msg_id[self.id_tek]
         self.drv.get(url=aa)
         return
 
     def click_pbGetHTML(self):
+        if self.refresh_started:
+            self.drv.switch_to.window(self.drv.window_handles[1])
         mamba_id_there = self.convert_mamba_id(self.drv.current_url)
         if len(mamba_id_there.split('#')) > 1:
             mamba_id_there = mamba_id_there.split('#')[0]

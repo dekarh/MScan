@@ -77,8 +77,7 @@ PEOPLE = [
 ]
 
 ONLINE = [
-    'OFFLINE',
-    'ONLINE',
+    '3 дня',
     'пофиг'
 ]
 

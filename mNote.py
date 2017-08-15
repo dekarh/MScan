@@ -39,6 +39,7 @@ class MainWindow(MainWindowSlots):
         self.pbToMessage.clicked.connect(self.click_pbToMessage)
         self.pbGetHTML.clicked.connect(self.click_pbGetHTML)
         self.cbHTML.activated[str].connect(self.click_cbHTML)
+        self.myTimer.timeout.connect(self.refreshing)
         return None
 
 if __name__ == '__main__':
