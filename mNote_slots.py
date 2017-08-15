@@ -5,7 +5,7 @@ from PyQt5.QtCore import QDate, QDateTime, QSize, Qt, QByteArray, QTimer
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTableWidget, QTableWidgetItem
 from os import popen
-from libScan import read_config, LINK, PEOPLE, ONLINE, ISHTML, s, authorize, p, B, wj, wr
+from libScan import read_config, LINK, PEOPLE, ONLINE, ISHTML, s, authorize, p, B, wj, wr, l
 import urllib.request
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -25,7 +25,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.messages = read_config(section='messages')
         self.webconfig = read_config(section='web')
 
-        self.drv = webdriver.Chrome()  # Инициализация драйвера
+        self.drv = webdriver.Firefox()  # Инициализация драйвера
         self.drv.implicitly_wait(5)  # Неявное ожидание - ждать ответа на каждый запрос до 5 сек
 
         dbconfig = read_config(section='mysql')
@@ -336,7 +336,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
 
     def click_pbReLogin(self):
         self.drv.quit()
-        self.drv = webdriver.Chrome()  # Инициализация драйвера
+        self.drv = webdriver.Firefox()  # Инициализация драйвера
         self.drv.implicitly_wait(5)  # Неявное ожидание - ждать ответа на каждый запрос до 5 сек
         authorize(self.drv, **self.webconfig)  # Авторизация
         self.refresh_started = False               # Выключаем автообновление
@@ -394,9 +394,9 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                 row_ch = read_cursor.fetchall()
                 if len(row_ch) < 1:
                     out = tuple()
-                    age = ('0',)
+                    age = (0,)
                     if len(names[i].split(',')) > 1:
-                        age = (names[i].split(',')[1].strip(), )
+                        age = (l(names[i].split(',')[1].strip()), )
                     out += (mamba_id, ) + (self.convert_msg_id(mamba_id), ) + (names[i].split(',')[0].strip(), ) + age
                     status = 0
                     for status_href in hrefs_onln:
