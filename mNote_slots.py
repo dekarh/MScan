@@ -98,14 +98,14 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             sql_append += 'ORDER BY age DESC;'
         if len(s(self.leFilter.text())) > 4:
             sql = 'SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,' \
-                  ' t_people, t_link, html, foto, history FROM peoples WHERE t_link >= %s AND t_link <= %s ' \
-                  'AND t_people >= %s  AND t_people <= %s AND mamba_id = %s ' + sql_append
+                  ' t_people, t_link, html, foto, history FROM peoples WHERE (age > 33 OR age = 0) AND ' \
+                  't_link >= %s AND t_link <= %s AND t_people >= %s  AND t_people <= %s AND mamba_id = %s ' + sql_append
             read_cursor.execute(sql, (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo,
                                       s(self.leFilter.text())))
         else:
             sql = 'SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, mamba_id, ' \
-                  't_people, t_link, html, foto, history FROM peoples WHERE t_link >= %s AND t_link <= %s AND ' \
-                  't_people >= %s AND t_people <= %s ' + sql_append
+                  't_people, t_link, html, foto, history FROM peoples WHERE (age > 33 OR age = 0) AND ' \
+                  't_link >= %s AND t_link <= %s AND t_people >= %s AND t_people <= %s ' + sql_append
             read_cursor.execute(sql, (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo))
 
         rows = read_cursor.fetchall()
