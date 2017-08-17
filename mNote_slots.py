@@ -97,13 +97,13 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         else:
             sql_append += 'ORDER BY age DESC;'
         if len(s(self.leFilter.text())) > 4:
-            sql = 'SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,' \
+            sql = 'SELECT DATE_FORMAT(access_date,"%d.%m %H:%i"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,' \
                   ' t_people, t_link, html, foto, history FROM peoples WHERE (age > 33 OR age = 0) AND ' \
                   't_link >= %s AND t_link <= %s AND t_people >= %s  AND t_people <= %s AND mamba_id = %s ' + sql_append
             read_cursor.execute(sql, (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo,
                                       s(self.leFilter.text())))
         else:
-            sql = 'SELECT IF(status=0,"OFFline","ONline"), her_name, age, msg, unread_msg, id, msg_id, mamba_id, ' \
+            sql = 'SELECT DATE_FORMAT(access_date,"%d.%m %H:%i"), her_name, age, msg, unread_msg, id, msg_id, mamba_id, ' \
                   't_people, t_link, html, foto, history FROM peoples WHERE (age > 33 OR age = 0) AND ' \
                   't_link >= %s AND t_link <= %s AND t_people >= %s AND t_people <= %s ' + sql_append
             read_cursor.execute(sql, (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo))
@@ -138,11 +138,12 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                 else:
                     self.tableWidget.setItem(i, j, QTableWidgetItem(str(cell)))
 
-        self.id_tek = self.id_all[0]
+        if len(self.id_all) > 0:
+            self.id_tek = self.id_all[0]
 #        self.mamba_id_tek = self.mamba_id[self.id_tek]
 #        self.msg_id_tek = self.msg_id[self.id_tek]
         # Устанавливаем заголовки таблицы
-        self.tableWidget.setHorizontalHeaderLabels(["Статус", "Имя", "Возраст"])
+        self.tableWidget.setHorizontalHeaderLabels(["Активность", "Имя", "Возраст"])
 
         # Устанавливаем выравнивание на заголовки
         self.tableWidget.horizontalHeaderItem(0).setTextAlignment(Qt.AlignCenter)
@@ -448,6 +449,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         return
 
     def click_pbGetHTML(self):
+        a = """
         if self.refresh_started:
             self.drv.switch_to.window(self.drv.window_handles[1])
         mamba_id_there = self.convert_mamba_id(self.drv.current_url)
@@ -495,5 +497,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                     self.dbconn.commit()
                     self.msg_id[mamba_id_there] = ab
             wj(self.drv)
+        """
         return
+
 
