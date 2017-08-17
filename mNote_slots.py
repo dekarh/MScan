@@ -449,7 +449,6 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         return
 
     def click_pbGetHTML(self):
-        a = """
         if self.refresh_started:
             self.drv.switch_to.window(self.drv.window_handles[1])
         mamba_id_there = self.convert_mamba_id(self.drv.current_url)
@@ -497,7 +496,6 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                     self.dbconn.commit()
                     self.msg_id[mamba_id_there] = ab
             wj(self.drv)
-        """
         return
 
 
