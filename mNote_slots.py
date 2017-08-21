@@ -393,12 +393,11 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                 read_cursor = self.dbconn.cursor()
                 read_cursor.execute('SELECT mamba_id FROM peoples WHERE mamba_id = %s',(mamba_id,))
                 row_ch = read_cursor.fetchall()
-                if len(row_ch) < 1:
+                if len(row_ch) < 1 and i <= len(names):
                     out = tuple()
                     age = (0,)
-                    if i <= len(names):
-                        if len(names[i].split(',')) > 1:
-                            age = (l(names[i].split(',')[1].strip()), )
+                    if len(names[i].split(',')) > 1:
+                        age = (l(names[i].split(',')[1].strip()), )
                     out += (mamba_id, ) + (self.convert_msg_id(mamba_id), ) + (names[i].split(',')[0].strip(), ) + age
                     status = 0
                     for status_href in hrefs_onln:
