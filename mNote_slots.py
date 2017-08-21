@@ -57,7 +57,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.stPeopleTo = 8
         self.cbPeopleTo.addItems(PEOPLE)
         self.cbPeopleTo.setCurrentIndex(self.stPeopleTo)
-        self.stStatus = 0
+        self.stStatus = 1
         self.cbStatus.addItems(ONLINE)
         self.cbStatus.setCurrentIndex(self.stStatus)
         self.cbPeople.addItems(PEOPLE)
