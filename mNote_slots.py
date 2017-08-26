@@ -1,12 +1,11 @@
-from mwindow import Ui_Form
+from os import popen
 from datetime import datetime
+import time
+
 from mysql.connector import MySQLConnection, Error
 from PyQt5.QtCore import QDate, QDateTime, QSize, Qt, QByteArray, QTimer
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QTableWidget, QTableWidgetItem
-from os import popen
-from libScan import read_config, LINK, PEOPLE, ONLINE, ISHTML, s, authorize, p, B, wj, wr, l
-import urllib.request
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
@@ -14,6 +13,33 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+import urllib.request
+
+
+from lib import s,l, read_config
+from lib_scan import p, wj, wr
+from mNote_env import LINK, PEOPLE, ONLINE, ISHTML, B
+from mNote_win import Ui_Form
+
+def authorize(driver, login, password, authorize_page=''):
+    time.sleep(1)
+    if authorize_page != '':
+        driver.get(authorize_page)
+    time.sleep(1)
+    sel = p(d = driver, f = 'c', **B['select_in'])
+    sel.click()
+    # Ввод логина
+    log = p(d = driver, f = 'c', **B['login'])
+    time.sleep(1)
+    log.send_keys(login)
+    # Ввод пароля
+    passwd = p(d = driver, f = 'c', **B['password'])
+    time.sleep(1)
+    passwd.send_keys(password)
+    # Отправка формы нажатием кнопки
+    cl = p(d = driver, f = 'c', **B['a-button'])
+    cl.click()
+    return
 
 
 class MainWindowSlots(Ui_Form):   # Определяем функции, которые будем вызывать в слотах
@@ -21,14 +47,14 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
     def setupUi(self, form):
         Ui_Form.setupUi(self,form)
 
-        self.fillconfig = read_config(section='fill')
-        self.messages = read_config(section='messages')
-        self.webconfig = read_config(section='web')
+        self.fillconfig = read_config(filename='mNote.ini', section='fill')
+        self.messages = read_config(filename='mNote.ini', section='messages')
+        self.webconfig = read_config(filename='mNote.ini', section='web')
 
         self.drv = webdriver.Firefox()  # Инициализация драйвера
         self.drv.implicitly_wait(5)  # Неявное ожидание - ждать ответа на каждый запрос до 5 сек
 
-        dbconfig = read_config(section='mysql')
+        dbconfig = read_config(filename='mNote.ini', section='mysql')
         self.dbconn = MySQLConnection(**dbconfig)  # Открываем БД из конфиг-файла
 #        self.read_cursor = self.dbconn.cursor()
 #        self.write_cursor = self.dbconn.cursor()
