@@ -38,6 +38,14 @@ def s(a):                   # белиберду в строку
     except TypeError:
         return ''
 
+def t(a):
+    try:
+        if a != None and str(type(a)) == "<class 'bool'>":
+            return a
+        return False
+    except TypeError:
+        return False
+
 def unique(lst):            # сделать список уникальным
     seen = set()
     j = 0

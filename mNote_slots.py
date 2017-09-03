@@ -16,8 +16,8 @@ from selenium.webdriver.support import expected_conditions as EC
 import urllib.request
 
 
-from lib import s,l, read_config
-from lib_scan import p, wj, wr
+from lib import s, l, t, read_config
+from lib_scan import p, wj, wr, crop_tags
 from mNote_env import LINK, PEOPLE, ONLINE, ISHTML, B
 from mNote_win import Ui_Form
 
@@ -69,6 +69,12 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.t_link = {}
         self.html = {}
         self.foto = {}
+        self.chk_educ = False
+        self.chk_child = False
+        self.chk_home = False
+        self.chk_baryg = False
+        self.chk_marr = False
+        self.chk_dist = False
         self.history = ''
         self.histories = {}
         self.stLinkFrom = 2
@@ -77,10 +83,10 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.stLinkTo = 7
         self.cbLinkTo.addItems(LINK)
         self.cbLinkTo.setCurrentIndex(self.stLinkTo)
-        self.stPeopleFrom = 7
+        self.stPeopleFrom = 6
         self.cbPeopleFrom.addItems(PEOPLE)
         self.cbPeopleFrom.setCurrentIndex(self.stPeopleFrom)
-        self.stPeopleTo = 8
+        self.stPeopleTo = 9
         self.cbPeopleTo.addItems(PEOPLE)
         self.cbPeopleTo.setCurrentIndex(self.stPeopleTo)
         self.stStatus = 1
@@ -96,6 +102,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.myTimer = QTimer()
         self.myTimer.start(300000)
         self.refresh_started = False
+
         return
 
     def click_pbPeopleFilter(self):  # Применить фильтр
@@ -138,17 +145,55 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.tableWidget.setColumnCount(3)             # Устанавливаем кол-во колонок
         self.tableWidget.setRowCount(len(rows))        # Кол-во строк из таблицы
         self.id_all = []
-        for i, row in enumerate(rows):
+        i = 0
+        for row in enumerate(rows):
+            html_tek = row[1][len(row[1])-3]
+            self.scan(html_tek)
+            show = False
+            if self.chb_mar.isChecked():
+                if self.chk_marr:
+                    show = True
+            else:
+                show = True
+            if self.chb_baryg.isChecked():
+                if self.chk_baryg:
+                    show = True
+            else:
+                show = True
+            if self.chb_child.isChecked:
+                if self.chk_child:
+                    show = True
+            else:
+                show = True
+            if self.chb_dist.isChecked:
+                if self.chk_dist:
+                    show = True
+            else:
+                show = True
+            if self.chb_edu.isChecked:
+                if self.chk_educ:
+                    show = True
+            else:
+                show = True
+            if self.chb_home.isChecked:
+                if self.chk_home:
+                    show = True
+            else:
+                show = True
+            if not show:
+                continue
+            self.id_all.append(int(row[1][len(row[1])-8]))
+            self.id_tek = int(row[1][len(row[1])-8])
             for j, cell in enumerate(row):
                 if j == len(row) - 8:
-                    self.id_all.append(int(cell))
-                    self.id_tek = int(cell)
+                    q = 0
                 elif j == len(row) - 1:
                     self.histories[self.id_tek] = cell
                 elif j == len(row) - 2:
                     self.foto[self.id_tek] = cell
                 elif j == len(row) - 3:
                     self.html[self.id_tek] = cell
+                    self.scan(cell)
                 elif j == len(row) - 4:
                     self.t_link[self.id_tek] = cell
                 elif j == len(row) - 5:
@@ -163,6 +208,8 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                     q = 0
                 else:
                     self.tableWidget.setItem(i, j, QTableWidgetItem(str(cell)))
+            i += 1
+        self.tableWidget.setRowCount(len(self.id_all))        # Обрезаем кол-во строк с учетом фильтров
 
         if len(self.id_all) > 0:
             self.id_tek = self.id_all[0]
@@ -186,6 +233,8 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             index = self.tableWidget.model().index(0, 0)
         else:
             self.updateHistory()
+        if index.row() < 0:
+            return None
         self.id_tek = self.id_all[index.row()]
         self.textEdit.setText(self.histories[self.id_tek])
         self.cbLink.setCurrentIndex(self.t_link[self.id_tek])
@@ -194,6 +243,16 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         pixmap.loadFromData(self.foto[self.id_tek],'JPG')
         self.label_3.setPixmap(pixmap)
         self.anketa_html.setHtml(self.html[self.id_tek])
+#        try:
+#            self.chb_baryg.setChecked(self.chk_baryg[self.id_tek])
+#            self.chb_child.setChecked(self.chk_child[self.id_tek])
+#            self.chb_dist.setChecked(self.chk_dist[self.id_tek])
+#            self.chb_edu.setChecked(self.chk_educ[self.id_tek])
+#            self.chb_home.setChecked(self.chk_home[self.id_tek])
+#            self.chb_mar.setChecked(self.chk_marr[self.id_tek])
+#        except:
+#            a = crop_tags(self.html[self.id_tek])
+
         if self.msg_id[self.id_tek] == None:
             self.pbToMessage.setEnabled(False)
         else:
@@ -284,7 +343,47 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         else:
             return None
 
+    def scan(self, html_tek):
+        a = crop_tags(html_tek)
+        self.chk_educ = False
+        self.chk_child = False
+        self.chk_home = False
+        self.chk_baryg = False
+        self.chk_marr = False
+        self.chk_dist = False
+        if a.find('Образование: среднее') == -1 and a.find('Образование: среднее специальное') == -1 \
+                and a.find('Образование: неполное высшее') == -1:
+            self.chk_educ = True
+        if a.find('Дети: Есть, живём вместе') == -1:
+            self.chk_child = True
+        if a.find('Проживание: Комната в общежитии, коммуналка') == -1 and \
+                        a.find('Проживание: Живу с родителями') == -1 and \
+                        a.find('Проживание: Живу с приятелем / с подругой') == -1 and \
+                        a.find('Проживание: Нет постоянного жилья') == -1:
+            self.chk_home = True
+        if a.find('Материальная поддержка: Ищу спонсора') == -1:
+            self.chk_baryg = True
+        if a.find('Отношения: В браке') == -1 and a.find('Отношения: Есть отношения') == -1:
+            self.chk_marr = True
+        if a.find('~') > -1:
+            if a.find(' км ') > -1:
+                dist = int(a[a.find('~') + 1:a.find('км')])
+            else:
+                dist = 0
+            if dist < 20:
+                self.chk_dist = True
+        else:
+            self.chk_dist = True
+        return
+
     def click_pbScan(self):
+        for id_curr in self.id_all:
+            self.scan(id_curr)
+        return
+
+
+
+    def deep_old_scan(self):        # старое глубокое сканирование
         self.drv.get(**self.fillconfig)  # Открытие страницы где поиск
         page = 1
         standart = len(p(d=self.drv, f='ps', **B['tiles']))
@@ -360,6 +459,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             page += 1
             q = 0
         return
+
 
     def click_pbReLogin(self):
         self.drv.quit()
@@ -463,8 +563,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         aa = 'https://www.mamba.ru/' + self.mamba_id[self.id_tek]
         self.drv.get(url=aa)
         wj(self.drv)
-        if self.html[self.id_tek] == None:
-            self.click_pbGetHTML()
+        self.click_pbGetHTML()
         return
 
     def click_pbToMessage(self):

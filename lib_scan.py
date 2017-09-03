@@ -16,6 +16,7 @@ from configparser import ConfigParser
 
 from mysql.connector import MySQLConnection, Error
 import time
+import re
 from datetime import datetime
 
 import string
@@ -45,7 +46,9 @@ def append_words(a, n_words):
 
 def wj(driver):  # Ждем, пока динамическая ява завершит все свои процессы
 #    WebDriverWait(driver, 50).until(lambda driver: driver.execute_script("return (typeof jQuery != 'undefined') ? jQuery.active == 0 : true"))
-    WebDriverWait(driver, 50).until(lambda driver: driver.execute_script("return jQuery.active == 0"))
+#    print driver.execute_script("return jQuery != 'undefined'))
+    WebDriverWait(driver, 50).until(lambda driver: driver.execute_script("return jQuery != 'undefined' ? jQuery.active == 0 : true"))
+#    print driver.execute_script("return jQuery != 'undefined'))
     """
     Еще варианты фреймворков/библиотек:
     "return jQuery.active == 0"
@@ -176,5 +179,17 @@ def p(d, t, f, s, a = '', data_id = '', e = ''):
                     return ['']
         else:
             return
+
+def crop_tags(html):
+    if html != None:
+        p = re.compile(r'<.*?>')
+        tek = p.sub(' ', html)
+        tek = tek.replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ')
+        tek = tek.replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ')
+        tek = tek.replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ')
+        return tek.replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ')
+    else:
+        return ''
+
 
 
