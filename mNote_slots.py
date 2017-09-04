@@ -145,45 +145,40 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.tableWidget.setColumnCount(3)             # Устанавливаем кол-во колонок
         self.tableWidget.setRowCount(len(rows))        # Кол-во строк из таблицы
         self.id_all = []
+        self.histories = {}
+        self.foto = {}
+        self.html = {}
+        self.t_link = {}
+        self.t_people = {}
+        self.mamba_id = {}
+        self.msg_id = {}
         i = 0
-        for row in enumerate(rows):
-            html_tek = row[1][len(row[1])-3]
+        for row in rows:
+            html_tek = row[len(row)-3]
             self.scan(html_tek)
-            show = False
+            show = True
             if self.chb_mar.isChecked():
-                if self.chk_marr:
-                    show = True
-            else:
-                show = True
+                if not self.chk_marr:
+                    show = False
             if self.chb_baryg.isChecked():
-                if self.chk_baryg:
-                    show = True
-            else:
-                show = True
-            if self.chb_child.isChecked:
-                if self.chk_child:
-                    show = True
-            else:
-                show = True
-            if self.chb_dist.isChecked:
-                if self.chk_dist:
-                    show = True
-            else:
-                show = True
-            if self.chb_edu.isChecked:
-                if self.chk_educ:
-                    show = True
-            else:
-                show = True
-            if self.chb_home.isChecked:
-                if self.chk_home:
-                    show = True
-            else:
-                show = True
+                if not self.chk_baryg:
+                    show = False
+            if self.chb_child.isChecked():
+                if not self.chk_child:
+                    show = False
+            if self.chb_dist.isChecked():
+                if not self.chk_dist:
+                    show = False
+            if self.chb_edu.isChecked():
+                if not self.chk_educ:
+                    show = False
+            if self.chb_home.isChecked():
+                if not self.chk_home:
+                    show = False
             if not show:
                 continue
-            self.id_all.append(int(row[1][len(row[1])-8]))
-            self.id_tek = int(row[1][len(row[1])-8])
+            self.id_all.append(int(row[len(row)-8]))
+            self.id_tek = int(row[len(row)-8])
             for j, cell in enumerate(row):
                 if j == len(row) - 8:
                     q = 0
