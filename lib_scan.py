@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #
-# Библиотека общих функций для selenium ver 1.01
+# Библиотека общих функций для selenium ver 1.03
 #
 
 from selenium import webdriver
@@ -45,10 +45,10 @@ def append_words(a, n_words):
         return
 
 def wj(driver):  # Ждем, пока динамическая ява завершит все свои процессы
-#    WebDriverWait(driver, 50).until(lambda driver: driver.execute_script("return (typeof jQuery != 'undefined') ? jQuery.active == 0 : true"))
-#    print driver.execute_script("return jQuery != 'undefined'))
-    WebDriverWait(driver, 50).until(lambda driver: driver.execute_script("return jQuery != 'undefined' ? jQuery.active == 0 : true"))
-#    print driver.execute_script("return jQuery != 'undefined'))
+    #    WebDriverWait(driver, 50).until(lambda driver: driver.execute_script("return (typeof jQuery != 'undefined') ? jQuery.active == 0 : true"))
+
+    WebDriverWait(driver, 50).until(lambda driver: driver.execute_script("return (typeof jQuery != 'undefined') ? jQuery.active == 0 : true"))
+
     """
     Еще варианты фреймворков/библиотек:
     "return jQuery.active == 0"
@@ -91,7 +91,19 @@ except AssertionError, e:
     self.verificationErrors.append('presence_of_element_located returned True for Waldo')
 """
 
-def p(d, t, f, s, a = '', data_id = '', e = ''):
+def crop_tags(html):
+    if html != None:
+        p = re.compile(r'<.*?>')
+        tek = p.sub(' ', html)
+        tek = tek.replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ')
+        tek = tek.replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ')
+        tek = tek.replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ')
+        return tek.replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ')
+    else:
+        return ''
+
+
+def p(d, t, f, s, a = '', data_id = '', e = '', SQL = '', txt = ''):
     wj(d)
     if data_id != '':
         data_id += '"]'
@@ -179,17 +191,5 @@ def p(d, t, f, s, a = '', data_id = '', e = ''):
                     return ['']
         else:
             return
-
-def crop_tags(html):
-    if html != None:
-        p = re.compile(r'<.*?>')
-        tek = p.sub(' ', html)
-        tek = tek.replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ')
-        tek = tek.replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ')
-        tek = tek.replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ')
-        return tek.replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ')
-    else:
-        return ''
-
 
 

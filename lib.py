@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Общая библиотека функций
-# ver 1.03
+# ver 1.05
 
 import string
 from configparser import ConfigParser
@@ -45,6 +45,17 @@ def t(a):
         return False
     except TypeError:
         return False
+
+def s_minus(a):                   # белиберду в строку
+    try:
+        if a != None:
+            if len(str(a).strip().replace(u"\xa0", u" ")) > 0:
+                return str(a).strip().replace(u"\xa0", u" ")
+            else:
+                return '-'
+    except TypeError:
+        return '-'
+
 
 def unique(lst):            # сделать список уникальным
     seen = set()
