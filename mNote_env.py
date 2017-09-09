@@ -18,6 +18,8 @@ B = {
  'anketa-favour': {'t': 'x', 's': '//DIV[@class="in clearFix"]', 'a': 'text'},
     'anketa-btn': {'t': 'x', 's': '//A[@class="button button-blue first  _openChateg "]', 'a': 'href'},
 'anketa-locator': {'t': 'x', 's': '//SPAN[@class="info info-misc__distance"]', 'a': 'text'},
+'anketa-deleted': {'t': 'x', 's': '//H2[text()="Анкета удалена, заблокирована или не существует"]'},
+
     'back-find' : {'t': 'x', 's': '//A[@class="widget-title js-widget-title"][text()="Результаты поиска"]'},
 
     'open-fotos': {'t': 'x', 's': '//DIV[@class="anketa-photo"]/IMG'},

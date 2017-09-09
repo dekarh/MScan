@@ -376,10 +376,11 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         if self.refresh_started:
             return
         for id_curr in self.id_all:
-            aa = 'https://www.mamba.ru/' + self.mamba_id[id_curr]
-            self.drv.get(url=aa)
-            wj(self.drv)
-            self.click_pbGetHTML()
+            if self.fotos_count[id_curr] == 0:                               # !!!!! Временно !!!!!
+                aa = 'https://www.mamba.ru/' + self.mamba_id[id_curr]
+                self.drv.get(url=aa)
+                wj(self.drv)
+                self.click_pbGetHTML()
         return
 
 
@@ -584,10 +585,19 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         if len(mamba_id_there.split('?')) > 1:
             mamba_id_there = mamba_id_there.split('?')[0]
         read_cursor = self.dbconn.cursor()
-        read_cursor.execute('SELECT id FROM peoples WHERE mamba_id = %s', (mamba_id_there,))
+        read_cursor.execute('SELECT id, her_name, age FROM peoples WHERE mamba_id = %s', (mamba_id_there,))
         row_row = read_cursor.fetchall()
         if len(row_row) > 0:
             id_there = row_row[0][0]
+            anketa_deleted = p(d=self.drv, f='p', **B['anketa-deleted'])
+            if anketa_deleted != None:
+                sql = 'UPDATE peoples SET t_link = 0 WHERE mamba_id = %s'
+                write_cursor = self.dbconn.cursor()
+                write_cursor.execute(sql, (mamba_id_there,))
+                self.dbconn.commit()
+                return
+            her_name = row_row[0][1]
+            age = row_row[0][2]
             wj(self.drv)
             open_fotos = p(d=self.drv, f='c', **B['open-fotos'])
             wj(self.drv)
@@ -603,7 +613,8 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                         wj(self.drv)
                         big_foto = p(d=self.drv, f='p', **B['big-foto'])
                         foto = urllib.request.urlopen(big_foto).read()
-                        f = open('./fotos/'+ mamba_id_there + '_' + '{0:02d}'.format(i+1) + '.jpg', 'wb')
+                        f = open('./fotos/'+ mamba_id_there + '_' + s(her_name).replace(' ','') + s(age) + '_' +
+                                 '{0:02d}'.format(i+1) + '.jpg', 'wb')
                         f.write(foto)
                         f.close()
                     self.fotos_count[id_there] = len(all_fotos)
@@ -611,7 +622,8 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                 if 1 > self.fotos_count[id_there]:
                     big_foto = p(d=self.drv, f='p', **B['big-foto'])
                     foto = urllib.request.urlopen(big_foto).read()
-                    f = open('./fotos/' + mamba_id_there + '001' + '.jpg', 'wb')
+                    f = open('./fotos/' + mamba_id_there + '_' + s(her_name).replace(' ','') + s(age) + '_01' +
+                             '.jpg', 'wb')
                     f.write(foto)
                     f.close()
                 self.fotos_count[id_there] = 1
