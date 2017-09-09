@@ -19,7 +19,13 @@ B = {
     'anketa-btn': {'t': 'x', 's': '//A[@class="button button-blue first  _openChateg "]', 'a': 'href'},
 'anketa-locator': {'t': 'x', 's': '//SPAN[@class="info info-misc__distance"]', 'a': 'text'},
     'back-find' : {'t': 'x', 's': '//A[@class="widget-title js-widget-title"][text()="Результаты поиска"]'},
+
+    'open-fotos': {'t': 'x', 's': '//DIV[@class="anketa-photo"]/IMG'},
+    'big-foto'  : {'t': 'x', 's': '//IMG[@class="photo-image"]', 'a': 'src'},
+    'all-fotos' : {'t': 'x', 's': '//IMG[@class="album-image"]'},
+   'close-fotos': {'t': 'x', 's': '//DIV[@class="close-button close-button-hovered"]|//DIV[@class="close-button"]'},
 }
+
 
 
 #   'okved-listA': {'t': 'x', 's': '//DIV[@sbisname="okvedSelector"]//TR[@data-id]//DIV[@title]', 'a': 'title'},

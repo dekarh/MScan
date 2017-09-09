@@ -69,6 +69,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.t_link = {}
         self.html = {}
         self.foto = {}
+        self.fotos_count = {}
         self.chk_educ = False
         self.chk_child = False
         self.chk_home = False
@@ -124,19 +125,19 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         if self.stStatus == 0:
             sql_append = 'AND DATE(access_date) >= DATE_SUB(NOW(), INTERVAL 3 DAY) '
         if self.cbHTML.currentIndex() == 1:
-            sql_append += 'AND html IS NOT NULL ORDER BY age DESC;'
+            sql_append += 'AND html IS NOT NULL ORDER BY age DESC;'# сообщения не показывает, с...
         elif self.cbHTML.currentIndex() == 0:
             sql_append += 'AND html IS NULL ORDER BY age DESC;'
         else:
             sql_append += 'ORDER BY age DESC;'
         if len(s(self.leFilter.text())) > 4:
-            sql = 'SELECT DATE_FORMAT(access_date,"%d.%m %H:%i"), her_name, age, msg, unread_msg, id, msg_id, mamba_id,' \
+            sql = 'SELECT DATE_FORMAT(access_date,"%d.%m %H:%i"), her_name, age, msg, fotos_count, id, msg_id, mamba_id,' \
                   ' t_people, t_link, html, foto, history FROM peoples WHERE (age > 33 OR age = 0) AND ' \
                   't_link >= %s AND t_link <= %s AND t_people >= %s  AND t_people <= %s AND mamba_id = %s ' + sql_append
             read_cursor.execute(sql, (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo,
                                       s(self.leFilter.text())))
         else:
-            sql = 'SELECT DATE_FORMAT(access_date,"%d.%m %H:%i"), her_name, age, msg, unread_msg, id, msg_id, mamba_id, ' \
+            sql = 'SELECT DATE_FORMAT(access_date,"%d.%m %H:%i"), her_name, age, msg, fotos_count, id, msg_id, mamba_id, ' \
                   't_people, t_link, html, foto, history FROM peoples WHERE (age > 33 OR age = 0) AND ' \
                   't_link >= %s AND t_link <= %s AND t_people >= %s AND t_people <= %s ' + sql_append
             read_cursor.execute(sql, (self.stLinkFrom, self.stLinkTo, self.stPeopleFrom, self.stPeopleTo))
@@ -197,10 +198,10 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                     self.mamba_id[self.id_tek] = cell
                 elif j == len(row) - 7:
                     self.msg_id[self.id_tek] = cell
-                elif j == len(row) - 9:
-                    q = 0                                           # сообщения не показывает, с...
+                elif j == len(row) - 9:                        # Количество загруженных фоток
+                    self.fotos_count[self.id_tek] = cell
                 elif j == len(row) - 10:
-                    q = 0
+                    q = 0                                     # сообщения не показывает, с...
                 else:
                     self.tableWidget.setItem(i, j, QTableWidgetItem(str(cell)))
             i += 1
@@ -372,10 +373,14 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         return
 
     def click_pbScan(self):
+        if self.refresh_started:
+            return
         for id_curr in self.id_all:
-            self.scan(id_curr)
+            aa = 'https://www.mamba.ru/' + self.mamba_id[id_curr]
+            self.drv.get(url=aa)
+            wj(self.drv)
+            self.click_pbGetHTML()
         return
-
 
 
     def deep_old_scan(self):        # старое глубокое сканирование
@@ -582,6 +587,37 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         read_cursor.execute('SELECT id FROM peoples WHERE mamba_id = %s', (mamba_id_there,))
         row_row = read_cursor.fetchall()
         if len(row_row) > 0:
+            id_there = row_row[0][0]
+            wj(self.drv)
+            open_fotos = p(d=self.drv, f='c', **B['open-fotos'])
+            wj(self.drv)
+            open_fotos.click()
+            time.sleep(1)
+            all_fotos = p(d=self.drv, f='ps', **B['all-fotos'])
+            wj(self.drv)
+            if all_fotos != None:                           # Грузим все фотки
+                if len(all_fotos) > self.fotos_count[id_there] :
+                    for i, all_foto in enumerate(all_fotos):
+                        if all_foto.is_displayed():
+                            all_foto.click()
+                        wj(self.drv)
+                        big_foto = p(d=self.drv, f='p', **B['big-foto'])
+                        foto = urllib.request.urlopen(big_foto).read()
+                        f = open('./fotos/'+ mamba_id_there + '_' + '{0:02d}'.format(i+1) + '.jpg', 'wb')
+                        f.write(foto)
+                        f.close()
+                    self.fotos_count[id_there] = len(all_fotos)
+            else:
+                if 1 > self.fotos_count[id_there]:
+                    big_foto = p(d=self.drv, f='p', **B['big-foto'])
+                    foto = urllib.request.urlopen(big_foto).read()
+                    f = open('./fotos/' + mamba_id_there + '001' + '.jpg', 'wb')
+                    f.write(foto)
+                    f.close()
+                self.fotos_count[id_there] = 1
+            close_fotos = p(d=self.drv, f='ps', **B['close-fotos'])
+            wj(self.drv)
+            close_fotos[0].click()
             wj(self.drv)
             html_msg = p(d=self.drv, f='p', **B['anketa-msg'])
             html_favour = p(d=self.drv, f='p', **B['anketa-favour'])
@@ -597,11 +633,11 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             html = html.replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ')
             html = html.replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ')
             html += '</body></html>'
-            self.html[row_row[0][0]] = html
+            self.html[id_there] = html
             self.anketa_html.setHtml(html)
-            sql = 'UPDATE peoples SET html = %s WHERE mamba_id = %s'
+            sql = 'UPDATE peoples SET html = %s, fotos_count = %s WHERE mamba_id = %s'
             write_cursor = self.dbconn.cursor()
-            write_cursor.execute(sql, (html, mamba_id_there))
+            write_cursor.execute(sql, (html, self.fotos_count[id_there], mamba_id_there))
             self.dbconn.commit()
             read_cursor = self.dbconn.cursor()
             read_cursor.execute('SELECT msg_id FROM peoples WHERE mamba_id = %s', (mamba_id_there,))
