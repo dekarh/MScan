@@ -599,37 +599,40 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             her_name = row_row[0][1]
             age = row_row[0][2]
             wj(self.drv)
-            open_fotos = p(d=self.drv, f='c', **B['open-fotos'])
+            no_fotos = p(d=self.drv, f='p', **B['no-fotos'])
             wj(self.drv)
-            open_fotos.click()
-            time.sleep(1)
-            all_fotos = p(d=self.drv, f='ps', **B['all-fotos'])
-            wj(self.drv)
-            if all_fotos != None:                           # Грузим все фотки
-                if len(all_fotos) > self.fotos_count[id_there] :
-                    for i, all_foto in enumerate(all_fotos):
-                        if all_foto.is_displayed():
-                            all_foto.click()
-                        wj(self.drv)
+            if no_fotos == None:
+                open_fotos = p(d=self.drv, f='c', **B['open-fotos'])
+                wj(self.drv)
+                open_fotos.click()
+                time.sleep(1)
+                all_fotos = p(d=self.drv, f='ps', **B['all-fotos'])
+                wj(self.drv)
+                if all_fotos != None:                           # Грузим все фотки
+                    if len(all_fotos) > self.fotos_count[id_there] :
+                        for i, all_foto in enumerate(all_fotos):
+                            if all_foto.is_displayed():
+                                all_foto.click()
+                            wj(self.drv)
+                            big_foto = p(d=self.drv, f='p', **B['big-foto'])
+                            foto = urllib.request.urlopen(big_foto).read()
+                            f = open('./fotos/'+ mamba_id_there + '_' + s(her_name).replace(' ','') + s(age) + '_' +
+                                     '{0:02d}'.format(i+1) + '.jpg', 'wb')
+                            f.write(foto)
+                            f.close()
+                        self.fotos_count[id_there] = len(all_fotos)
+                else:
+                    if 1 > self.fotos_count[id_there]:
                         big_foto = p(d=self.drv, f='p', **B['big-foto'])
                         foto = urllib.request.urlopen(big_foto).read()
-                        f = open('./fotos/'+ mamba_id_there + '_' + s(her_name).replace(' ','') + s(age) + '_' +
-                                 '{0:02d}'.format(i+1) + '.jpg', 'wb')
+                        f = open('./fotos/' + mamba_id_there + '_' + s(her_name).replace(' ','') + s(age) + '_01' +
+                                 '.jpg', 'wb')
                         f.write(foto)
                         f.close()
-                    self.fotos_count[id_there] = len(all_fotos)
-            else:
-                if 1 > self.fotos_count[id_there]:
-                    big_foto = p(d=self.drv, f='p', **B['big-foto'])
-                    foto = urllib.request.urlopen(big_foto).read()
-                    f = open('./fotos/' + mamba_id_there + '_' + s(her_name).replace(' ','') + s(age) + '_01' +
-                             '.jpg', 'wb')
-                    f.write(foto)
-                    f.close()
-                self.fotos_count[id_there] = 1
-            close_fotos = p(d=self.drv, f='ps', **B['close-fotos'])
-            wj(self.drv)
-            close_fotos[0].click()
+                    self.fotos_count[id_there] = 1
+                close_fotos = p(d=self.drv, f='ps', **B['close-fotos'])
+                wj(self.drv)
+                close_fotos[0].click()
             wj(self.drv)
             html_msg = p(d=self.drv, f='p', **B['anketa-msg'])
             html_favour = p(d=self.drv, f='p', **B['anketa-favour'])

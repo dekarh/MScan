@@ -23,6 +23,7 @@ B = {
     'back-find' : {'t': 'x', 's': '//A[@class="widget-title js-widget-title"][text()="Результаты поиска"]'},
 
     'open-fotos': {'t': 'x', 's': '//DIV[@class="anketa-photo"]/IMG'},
+    'no-fotos': {'t': 'x', 's': '//DIV[text()="Нет фото :("]'},
     'big-foto'  : {'t': 'x', 's': '//IMG[@class="photo-image"]', 'a': 'src'},
     'all-fotos' : {'t': 'x', 's': '//IMG[@class="album-image"]'},
    'close-fotos': {'t': 'x', 's': '//DIV[@class="close-button close-button-hovered"]|//DIV[@class="close-button"]'},
