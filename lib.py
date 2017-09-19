@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 # Общая библиотека функций
-# ver 1.05
+# ver 1.07
 
 import string
+import re
 from configparser import ConfigParser
 
 def lenl(a):            # длинна белиберды переведнной в цифры или 0
@@ -69,6 +70,20 @@ def unique(lst):            # сделать список уникальным
                 break
             seen.add(x.lower())
     return
+
+def filter_rus_sp(a):
+    if not a:
+        return ''
+    else:
+        b = re.sub(r'[^а-яА-ЯёЁ0-9\\\-\.\/\(\)\s]', '', a)
+    return b.replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ')
+
+def filter_rus_minus(a):
+    if not a:
+        return ''
+    else:
+        b = re.sub(r'[^а-яА-ЯёЁ0-9\-\s]', '', a)
+    return b.replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ').replace('  ',' ')
 
 def get_path(full):
     if len(full.split('/')) > 1:

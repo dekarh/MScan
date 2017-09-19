@@ -330,7 +330,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             m_id = m_id.split('#')[0]
         if len(m_id.split('&')) > 1:
             m_id = m_id.split('&')[0]
-        print(a, a[21:], m_id)
+#        print(a, a[21:], m_id)
         return m_id
 
     def convert_msg_id(self, m_id):
@@ -495,17 +495,18 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         write_cursor = self.dbconn.cursor()
         write_cursor.execute(sql, (0,))
         self.dbconn.commit()
-
         self.drv.get(**self.fillconfig)  # Открытие страницы где поиск
-
         page = 1
         standart = len(p(d=self.drv, f='ps', **B['tiles']))
+        i_tek = 0
+        outs = []
+        updates = []
+        statuses = []
         while len(p(d=self.drv, f='ps', **B['tiles'])) == standart:
-            outs = []
-            statuses = []
-            if page > 1:
-                page_link = self.drv.find_element_by_xpath('//DIV[@class="pager wrap"]//LI[text()="' + str(page) + '"]')
-                page_link.click()
+            page_link = self.drv.find_element_by_xpath('//DIV[@class="pager wrap"]//LI[text()="' + str(page) + '"]')
+            page_link.click()
+            tiles = []
+            tiles = p(d=self.drv, f='ps', **B['tiles'])
             names = []
             names = p(d=self.drv, f='ps', **B['tiles-name'])
             hrefs = []
@@ -515,34 +516,74 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             hrefs_onln = []
             hrefs_onln = p(d=self.drv, f='ps', **B['tiles-onln'])
             for i, mamba_href in enumerate(hrefs):
+                if i < i_tek:
+                    continue
+                i_tek = i
                 mamba_id = self.convert_mamba_id(mamba_href)
                 row_ch = []
                 read_cursor = self.dbconn.cursor()
-                read_cursor.execute('SELECT mamba_id FROM peoples WHERE mamba_id = %s',(mamba_id,))
+                read_cursor.execute('SELECT id, html FROM peoples WHERE mamba_id = %s',(mamba_id,))
                 row_ch = read_cursor.fetchall()
-                if len(row_ch) < 1 and i <= len(names):
+                if len(row_ch) < 1 and i <= len(names): # карточки нет
                     out = tuple()
-                    age = (0,)
+                    age = 0
                     if len(names[i].split(',')) > 1:
-                        age = (l(names[i].split(',')[1].strip()), )
-                    out += (mamba_id, ) + (self.convert_msg_id(mamba_id), ) + (names[i].split(',')[0].strip(), ) + age
+                        age = l(names[i].split(',')[1].strip())
+                    out += (mamba_id, ) + (self.convert_msg_id(mamba_id), ) + (names[i].split(',')[0].strip(), ) + (age,)
                     status = 0
                     for status_href in hrefs_onln:
                         if self.convert_mamba_id(status_href) == mamba_id:
                             status = 1
+                            statuses.append((status, mamba_id))
                     foto = urllib.request.urlopen(fotos_hrefs[i]).read()
-                    out += (status, ) + (foto, )
+#                    tiles[i].click()
+#                    wj(self.drv)
+#                    html = self.get_html()
+                    html = None
+#                    back = p(d=self.drv, f='c', **B['back-find'])
+#                    wj(self.drv)
+#                    back.click()
+#                    wj(self.drv)
+                    out += (status, ) + (foto, ) + (html, )
                     outs.append(out)
-                else:
+#                    i_tek += 1
+#                    break
+                elif not row_ch[0][1]:  # html нет а карточка есть
+                    update = tuple()
+#                    tiles[i].click()
+#                    wj(self.drv)
+#                    html = self.get_html()
+                    html = None
+#                    back = p(d=self.drv, f='c', **B['back-find'])
+#                    wj(self.drv)
+#                    back.click()
+#                    wj(self.drv)
+                    status = 0
+                    for status_href in hrefs_onln:
+                        if self.convert_mamba_id(status_href) == mamba_id:
+                            status = 1
+                            statuses.append((status, mamba_id))
+                    update += (html,) + (status,) + (row_ch[0][0],)
+#                    update += (status,) + (row_ch[0][0],)
+                    updates.append(update)
+#                    i_tek += 1
+#                    break
+                else:                   # есть и html и карточка
                     status = 0
                     for status_href in hrefs_onln:
                         if self.convert_mamba_id(status_href) == mamba_id:
                             status = 1
                             statuses.append((status, mamba_id))
             if len(outs) > 0:
-                sql = 'INSERT INTO peoples(mamba_id, msg_id, her_name, age, status, foto) VALUES (%s,%s,%s,%s,%s,%s)'
+                sql = 'INSERT INTO peoples(mamba_id, msg_id, her_name, age, status, foto, html) ' \
+                      'VALUES (%s,%s,%s,%s,%s,%s,%s)'
                 write_cursor = self.dbconn.cursor()
                 write_cursor.executemany(sql, outs)
+                self.dbconn.commit()
+            if len(updates) > 0:
+                sql = 'UPDATE peoples set html = %s, status = %s, access_date = NOW() WHERE id = %s'
+                write_cursor = self.dbconn.cursor()
+                write_cursor.executemany(sql, updates)
                 self.dbconn.commit()
             if len(statuses) > 0:
                 sql = 'UPDATE peoples SET status = %s, access_date = NOW() WHERE mamba_id = %s'
@@ -552,7 +593,12 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             else:
                 self.setup_tableWidget()
                 return
-            page += 1
+            outs = []
+            updates = []
+            statuses = []
+            if i_tek >= len(hrefs) - 1:
+                page += 1
+                i_tek = 0
             q=0
         q = 0
         self.setup_tableWidget()
@@ -573,6 +619,23 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         aa = 'https://www.mamba.ru/my/message.phtml?uid=' + self.msg_id[self.id_tek]
         self.drv.get(url=aa)
         return
+
+    def get_html(self):
+        html_msg = p(d=self.drv, f='p', **B['anketa-msg'])
+        html_favour = p(d=self.drv, f='p', **B['anketa-favour'])
+        html_abouts = p(d=self.drv, f='ps', **B['anketa-about'])
+        html_locator = p(d=self.drv, f='p', **B['anketa-locator'])
+        html = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/' \
+               'strict.dtd"><html><head></head><body><p>' + html_msg + '</p><h3>' + html_locator + '</h3><p>'
+        html += html_favour.replace('\n', ' | ') + '</p>'
+        if len(html_abouts) > 0:
+            for html_into in html_abouts:
+                html += html_into
+        html = html.replace('\n', ' ').replace('\t', ' ').replace('  ', ' ').replace('  ', ' ')
+        html = html.replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ')
+        html = html.replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ')
+        html += '</body></html>'
+        return html
 
     def click_pbGetHTML(self):
         if self.refresh_started:
