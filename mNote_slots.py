@@ -488,9 +488,9 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         wj(self.drv)
 
     def refreshing(self):                           # Обновление статусов
- #       if not self.refresh_started:
- #           return
- #       self.drv.switch_to.window(self.drv.window_handles[0])
+        if not self.refresh_started:
+            return
+        self.drv.switch_to.window(self.drv.window_handles[0])
         sql = 'UPDATE peoples SET status = %s WHERE id > 0'     # Сначала всех в оффлайн
         write_cursor = self.dbconn.cursor()
         write_cursor.execute(sql, (0,))
@@ -544,29 +544,29 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                         if self.convert_mamba_id(status_href) == mamba_id:
                             status = 1
                             statuses.append((status, foto, mamba_id))
-#                    tiles[i].click()
-#                    wj(self.drv)
-#                    html = self.get_html()
-                    html = None
-#                    back = p(d=self.drv, f='c', **B['back-find'])
-#                    wj(self.drv)
-#                    back.click()
-#                    wj(self.drv)
+                    tiles[i].click()
+                    wj(self.drv)
+                    html = self.get_html()
+#                    html = None
+                    back = p(d=self.drv, f='c', **B['back-find'])
+                    wj(self.drv)
+                    back.click()
+                    wj(self.drv)
                     out += (status, ) + (foto, ) + (html, )
                     outs.append(out)
 #                    i_tek += 1
 #                    break
                 elif not row_ch[0][1]:  # html нет а карточка есть
                     update = tuple()
-#                    tiles[i].click()
-#                    wj(self.drv)
-#                    html = self.get_html()
+                    tiles[i].click()
+                    wj(self.drv)
+                    html = self.get_html()
                     foto = urllib.request.urlopen(fotos_hrefs[i]).read()
-                    html = None
-#                    back = p(d=self.drv, f='c', **B['back-find'])
-#                    wj(self.drv)
-#                    back.click()
-#                    wj(self.drv)
+#                    html = None
+                    back = p(d=self.drv, f='c', **B['back-find'])
+                    wj(self.drv)
+                    back.click()
+                    wj(self.drv)
                     status = 0
                     for status_href in hrefs_onln:
                         if self.convert_mamba_id(status_href) == mamba_id:
@@ -601,9 +601,9 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                 write_cursor = self.dbconn.cursor()
                 write_cursor.executemany(sql, statuses)
                 self.dbconn.commit()
-#            else:                              # Если нет ни одного в онлайне - выходим
-#                self.setup_tableWidget()
-#                return
+            else:                              # Если нет ни одного в онлайне - выходим
+                self.setup_tableWidget()
+                return
             outs = []
             updates = []
             statuses = []
