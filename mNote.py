@@ -33,13 +33,14 @@ class MainWindow(MainWindowSlots):
         self.cbPeople.activated[str].connect(self.click_cbPeople)
         self.pbPeopleFilter.clicked.connect(self.click_pbPeopleFilter)
         self.pbReLogin.clicked.connect(self.click_pbReLogin)
-        self.pbRefresh.clicked.connect(self.click_pbRefresh)
+#        self.pbRefresh.clicked.connect(self.click_pbRefresh)
+        self.pbRefresh.clicked.connect(self.refreshing)
         self.pbScan.clicked.connect(self.click_pbScan)
         self.pbToAnketa.clicked.connect(self.click_pbToAnketa)
         self.pbToMessage.clicked.connect(self.click_pbToMessage)
         self.pbGetHTML.clicked.connect(self.click_pbGetHTML)
         self.cbHTML.activated[str].connect(self.click_cbHTML)
-        self.myTimer.timeout.connect(self.refreshing)
+#        self.myTimer.timeout.connect(self.refreshing)
         return None
 
 if __name__ == '__main__':

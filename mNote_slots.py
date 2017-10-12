@@ -488,9 +488,9 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         wj(self.drv)
 
     def refreshing(self):                           # Обновление статусов
-        if not self.refresh_started:
-            return
-        self.drv.switch_to.window(self.drv.window_handles[0])
+ #       if not self.refresh_started:
+ #           return
+ #       self.drv.switch_to.window(self.drv.window_handles[0])
         sql = 'UPDATE peoples SET status = %s WHERE id > 0'     # Сначала всех в оффлайн
         write_cursor = self.dbconn.cursor()
         write_cursor.execute(sql, (0,))
@@ -502,9 +502,11 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         outs = []
         updates = []
         statuses = []
-        while len(p(d=self.drv, f='ps', **B['tiles'])) == standart:
-            page_link = self.drv.find_element_by_xpath('//DIV[@class="pager wrap"]//LI[text()="' + str(page) + '"]')
-            page_link.click()
+        has_new = True
+        loaded_mamba_id = []
+        while has_new:
+#            page_link = self.drv.find_element_by_xpath('//DIV[@class="pager wrap"]//LI[text()="' + str(page) + '"]')
+#            page_link.click()
             tiles = []
             tiles = p(d=self.drv, f='ps', **B['tiles'])
             names = []
@@ -515,27 +517,33 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             fotos_hrefs = p(d=self.drv, f='ps', **B['tiles-img'])
             hrefs_onln = []
             hrefs_onln = p(d=self.drv, f='ps', **B['tiles-onln'])
+            has_new = False
+            q = len(tiles)
+            if len(names) != q or len(hrefs) != q or len(fotos_hrefs) != q:
+                print('Обновление: Количество в массивах не совпадает')
+                break
             for i, mamba_href in enumerate(hrefs):
-                if i < i_tek:
-                    continue
-                i_tek = i
                 mamba_id = self.convert_mamba_id(mamba_href)
+                for mamba_id_tek in loaded_mamba_id:
+                    if mamba_id_tek == mamba_id:
+                        break
+                has_new = True
                 row_ch = []
                 read_cursor = self.dbconn.cursor()
                 read_cursor.execute('SELECT id, html FROM peoples WHERE mamba_id = %s',(mamba_id,))
                 row_ch = read_cursor.fetchall()
-                if len(row_ch) < 1 and i <= len(names): # карточки нет
+                if len(row_ch) < 1: # карточки нет
                     out = tuple()
                     age = 0
                     if len(names[i].split(',')) > 1:
                         age = l(names[i].split(',')[1].strip())
                     out += (mamba_id, ) + (self.convert_msg_id(mamba_id), ) + (names[i].split(',')[0].strip(), ) + (age,)
                     status = 0
+                    foto = urllib.request.urlopen(fotos_hrefs[i]).read()
                     for status_href in hrefs_onln:
                         if self.convert_mamba_id(status_href) == mamba_id:
                             status = 1
-                            statuses.append((status, mamba_id))
-                    foto = urllib.request.urlopen(fotos_hrefs[i]).read()
+                            statuses.append((status, foto, mamba_id))
 #                    tiles[i].click()
 #                    wj(self.drv)
 #                    html = self.get_html()
@@ -553,6 +561,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
 #                    tiles[i].click()
 #                    wj(self.drv)
 #                    html = self.get_html()
+                    foto = urllib.request.urlopen(fotos_hrefs[i]).read()
                     html = None
 #                    back = p(d=self.drv, f='c', **B['back-find'])
 #                    wj(self.drv)
@@ -562,18 +571,20 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                     for status_href in hrefs_onln:
                         if self.convert_mamba_id(status_href) == mamba_id:
                             status = 1
-                            statuses.append((status, mamba_id))
-                    update += (html,) + (status,) + (row_ch[0][0],)
+                            statuses.append((status, foto, mamba_id))
+                    update += (html,) + (status,) + (foto, ) + (row_ch[0][0],)
 #                    update += (status,) + (row_ch[0][0],)
                     updates.append(update)
 #                    i_tek += 1
 #                    break
                 else:                   # есть и html и карточка
                     status = 0
+                    foto = urllib.request.urlopen(fotos_hrefs[i]).read()
                     for status_href in hrefs_onln:
                         if self.convert_mamba_id(status_href) == mamba_id:
                             status = 1
-                            statuses.append((status, mamba_id))
+                            statuses.append((status, foto, mamba_id))
+                loaded_mamba_id.append(mamba_id)
             if len(outs) > 0:
                 sql = 'INSERT INTO peoples(mamba_id, msg_id, her_name, age, status, foto, html) ' \
                       'VALUES (%s,%s,%s,%s,%s,%s,%s)'
@@ -581,24 +592,25 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                 write_cursor.executemany(sql, outs)
                 self.dbconn.commit()
             if len(updates) > 0:
-                sql = 'UPDATE peoples set html = %s, status = %s, access_date = NOW() WHERE id = %s'
+                sql = 'UPDATE peoples set html = %s, status = %s, foto = %s WHERE id = %s'
                 write_cursor = self.dbconn.cursor()
                 write_cursor.executemany(sql, updates)
                 self.dbconn.commit()
             if len(statuses) > 0:
-                sql = 'UPDATE peoples SET status = %s, access_date = NOW() WHERE mamba_id = %s'
+                sql = 'UPDATE peoples SET status = %s, foto = %s, access_date = NOW() WHERE mamba_id = %s'
                 write_cursor = self.dbconn.cursor()
                 write_cursor.executemany(sql, statuses)
                 self.dbconn.commit()
-            else:
-                self.setup_tableWidget()
-                return
+#            else:                              # Если нет ни одного в онлайне - выходим
+#                self.setup_tableWidget()
+#                return
             outs = []
             updates = []
             statuses = []
-            if i_tek >= len(hrefs) - 1:
-                page += 1
-                i_tek = 0
+            self.drv.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+#            if i_tek >= len(hrefs) - 1:
+#                page += 1
+#                i_tek = 0
             q=0
         q = 0
         self.setup_tableWidget()

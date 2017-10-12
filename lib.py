@@ -69,7 +69,7 @@ def unique(lst):            # сделать список уникальным
                 seen = set()
                 break
             seen.add(x.lower())
-    return
+    return lst
 
 def filter_rus_sp(a):
     if not a:
