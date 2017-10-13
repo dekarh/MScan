@@ -56,9 +56,6 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
 
         dbconfig = read_config(filename='mNote.ini', section='mysql')
         self.dbconn = MySQLConnection(**dbconfig)  # Открываем БД из конфиг-файла
-#        self.read_cursor = self.dbconn.cursor()
-#        self.write_cursor = self.dbconn.cursor()
-
         self.id_all = []
         self.id_tek = 0
         self.mamba_id = {}
@@ -496,17 +493,19 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         write_cursor.execute(sql, (0,))
         self.dbconn.commit()
         self.drv.get(**self.fillconfig)  # Открытие страницы где поиск
-        page = 1
+        page = 0
         standart = len(p(d=self.drv, f='ps', **B['tiles']))
         i_tek = 0
         outs = []
         updates = []
         statuses = []
         has_new = True
-        loaded_mamba_id = []
+        loaded_mamba_ids = []
         while has_new:
 #            page_link = self.drv.find_element_by_xpath('//DIV[@class="pager wrap"]//LI[text()="' + str(page) + '"]')
 #            page_link.click()
+            for i in range(0, page):
+                self.drv.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             tiles = []
             tiles = p(d=self.drv, f='ps', **B['tiles'])
             names = []
@@ -518,15 +517,19 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             hrefs_onln = []
             hrefs_onln = p(d=self.drv, f='ps', **B['tiles-onln'])
             has_new = False
+            reload = False
             q = len(tiles)
             if len(names) != q or len(hrefs) != q or len(fotos_hrefs) != q:
                 print('Обновление: Количество в массивах не совпадает')
                 break
             for i, mamba_href in enumerate(hrefs):
+                nextload = False
                 mamba_id = self.convert_mamba_id(mamba_href)
-                for mamba_id_tek in loaded_mamba_id:
-                    if mamba_id_tek == mamba_id:
-                        break
+                for loaded_mamba_id in loaded_mamba_ids:
+                    if loaded_mamba_id == mamba_id:
+                        nextload = True
+                if nextload:
+                    continue
                 has_new = True
                 row_ch = []
                 read_cursor = self.dbconn.cursor()
@@ -534,6 +537,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                 row_ch = read_cursor.fetchall()
                 if len(row_ch) < 1: # карточки нет
                     out = tuple()
+                    html = None
                     age = 0
                     if len(names[i].split(',')) > 1:
                         age = l(names[i].split(',')[1].strip())
@@ -544,39 +548,53 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                         if self.convert_mamba_id(status_href) == mamba_id:
                             status = 1
                             statuses.append((status, foto, mamba_id))
-                    tiles[i].click()
-                    wj(self.drv)
-                    html = self.get_html()
-#                    html = None
-                    back = p(d=self.drv, f='c', **B['back-find'])
-                    wj(self.drv)
-                    back.click()
-                    wj(self.drv)
+                    try:
+                        tiles[i].click()
+                    except:
+                        q = 0
+                    else:
+                        try:
+                            wj(self.drv)
+                            html = self.get_html()
+                            back = p(d=self.drv, f='c', **B['back-find'])
+                            wj(self.drv)
+                            back.click()
+                            wj(self.drv)
+                        except:
+                            q = 0
                     out += (status, ) + (foto, ) + (html, )
                     outs.append(out)
 #                    i_tek += 1
-#                    break
+                    reload = True
                 elif not row_ch[0][1]:  # html нет а карточка есть
                     update = tuple()
-                    tiles[i].click()
-                    wj(self.drv)
-                    html = self.get_html()
+                    html = None
                     foto = urllib.request.urlopen(fotos_hrefs[i]).read()
-#                    html = None
-                    back = p(d=self.drv, f='c', **B['back-find'])
-                    wj(self.drv)
-                    back.click()
-                    wj(self.drv)
                     status = 0
                     for status_href in hrefs_onln:
                         if self.convert_mamba_id(status_href) == mamba_id:
                             status = 1
                             statuses.append((status, foto, mamba_id))
+                    try:
+                        tiles[i].click()
+                    except:
+                        q = 0
+                    else:
+                        try:
+                            wj(self.drv)
+                            html = self.get_html()
+                            foto = urllib.request.urlopen(fotos_hrefs[i]).read()
+                            back = p(d=self.drv, f='c', **B['back-find'])
+                            wj(self.drv)
+                            back.click()
+                            wj(self.drv)
+                        except:
+                            q = 0
                     update += (html,) + (status,) + (foto, ) + (row_ch[0][0],)
 #                    update += (status,) + (row_ch[0][0],)
                     updates.append(update)
+                    reload = True
 #                    i_tek += 1
-#                    break
                 else:                   # есть и html и карточка
                     status = 0
                     foto = urllib.request.urlopen(fotos_hrefs[i]).read()
@@ -584,7 +602,9 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                         if self.convert_mamba_id(status_href) == mamba_id:
                             status = 1
                             statuses.append((status, foto, mamba_id))
-                loaded_mamba_id.append(mamba_id)
+                loaded_mamba_ids.append(mamba_id)
+                if reload:
+                    break
             if len(outs) > 0:
                 sql = 'INSERT INTO peoples(mamba_id, msg_id, her_name, age, status, foto, html) ' \
                       'VALUES (%s,%s,%s,%s,%s,%s,%s)'
@@ -607,7 +627,10 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             outs = []
             updates = []
             statuses = []
-            self.drv.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            if (not reload) or (i == len(hrefs)-1):
+                self.drv.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                page += 1
+
 #            if i_tek >= len(hrefs) - 1:
 #                page += 1
 #                i_tek = 0
