@@ -34,7 +34,7 @@ def l(a):               # белиберду в цифры или 0
 def s(a):                   # белиберду в строку
     try:
         if a != None:
-            return str(a).strip().replace(u"\xa0", u" ")
+            return str(a).strip().replace(u"\xa0", u" ").replace('\n','')
         return ''
     except TypeError:
         return ''

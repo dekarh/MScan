@@ -1,4 +1,5 @@
-from os import popen
+# from os import popen
+from subprocess import Popen, PIPE
 from datetime import datetime
 import time
 
@@ -67,6 +68,8 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.html = {}
         self.foto = {}
         self.fotos_count = {}
+        self.names = {}
+        self.ages = {}
         self.chk_educ = False
         self.chk_child = False
         self.chk_home = False
@@ -199,6 +202,12 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                     self.fotos_count[self.id_tek] = cell
                 elif j == len(row) - 10:
                     q = 0                                     # сообщения не показывает, с...
+                elif j == len(row) - 11:
+                    self.tableWidget.setItem(i, j, QTableWidgetItem(str(cell)))
+                    self.ages[self.id_tek] = str(cell)
+                elif j == len(row) - 12:
+                    self.tableWidget.setItem(i, j, QTableWidgetItem(str(cell)))
+                    self.names[self.id_tek] = str(cell)
                 else:
                     self.tableWidget.setItem(i, j, QTableWidgetItem(str(cell)))
             i += 1
@@ -246,6 +255,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
 #        except:
 #            a = crop_tags(self.html[self.id_tek])
 
+        self.setup_tableFotos()
         if self.msg_id[self.id_tek] == None:
             self.pbToMessage.setEnabled(False)
         else:
@@ -267,6 +277,35 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.updateHistory()
         return
 
+    def setup_tableFotos(self):
+        mamba_id = self.mamba_id[self.id_tek]
+        name = self.names[self.id_tek]
+        count = self.fotos_count[self.id_tek]
+        self.tableFotos.setColumnCount(0)
+        self.tableFotos.setRowCount(1)
+        self.tableFotos.setColumnCount(count)
+        for i in range(1, count + 1):
+            self.tableFotos.setItem(0, i-1, QTableWidgetItem(str(i)))
+        self.tableFotos.resizeColumnsToContents()
+
+    def click_label_3(self):
+        if index == None or index.row() < 0 or index.row() > 0 or index.column() < 0:
+            index = self.tableFotos.model().index(0, 0)
+        pixmap = QPixmap('photos/'+ self.mamba_id[self.id_tek] + '_' + s(self.names[self.id_tek]).replace(' ','') +
+                         s(self.ages[self.id_tek]) + '_' + '{0:02d}'.format(index.column()+1) + '.jpg')
+        self.label_3.setPixmap(pixmap)
+
+    def click_tableFotos(self, index=None):
+        if index == None or index.row() < 0 or index.row() > 0 or index.column() < 0:
+            index = self.tableFotos.model().index(0, 0)
+        proc = Popen('eog ' + 'photos/'+ self.mamba_id[self.id_tek] + '_' + s(self.names[self.id_tek]).replace(' ','') +
+                     s(self.ages[self.id_tek]) + '_' + '{0:02d}'.format(index.column()+1) + '.jpg', shell=True,
+                     stdout=PIPE, stderr=PIPE)
+        proc.wait()  # дождаться выполнения
+        res = proc.communicate()  # получить tuple('stdout', 'stderr')
+        if proc.returncode:
+            print(res[1])
+            print('result:', res[0])
 
     def click_cbPeople(self):
         write_cursor = self.dbconn.cursor()
@@ -485,9 +524,9 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         wj(self.drv)
 
     def refreshing(self):                           # Обновление статусов
-        if not self.refresh_started:
-            return
-        self.drv.switch_to.window(self.drv.window_handles[0])
+#        if not self.refresh_started:
+#            return
+#        self.drv.switch_to.window(self.drv.window_handles[0])
         sql = 'UPDATE peoples SET status = %s WHERE id > 0'     # Сначала всех в оффлайн
         write_cursor = self.dbconn.cursor()
         write_cursor.execute(sql, (0,))
@@ -505,7 +544,8 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
 #            page_link = self.drv.find_element_by_xpath('//DIV[@class="pager wrap"]//LI[text()="' + str(page) + '"]')
 #            page_link.click()
             for i in range(0, page):
-                self.drv.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+#                self.drv.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                self.drv.execute_script("window.scrollTo(0, 900);")
             tiles = []
             tiles = p(d=self.drv, f='ps', **B['tiles'])
             names = []
@@ -628,7 +668,8 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             updates = []
             statuses = []
             if (not reload) or (i == len(hrefs)-1):
-                self.drv.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+#                self.drv.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                self.drv.execute_script("window.scrollTo(0, 900);")
                 page += 1
 
 #            if i_tek >= len(hrefs) - 1:
@@ -714,8 +755,8 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
                             wj(self.drv)
                             big_foto = p(d=self.drv, f='p', **B['big-foto'])
                             foto = urllib.request.urlopen(big_foto).read()
-                            f = open('./fotos/'+ mamba_id_there + '_' + s(her_name).replace(' ','') + s(age) + '_' +
-                                     '{0:02d}'.format(i+1) + '.jpg', 'wb')
+                            f = open('./photos/'+ mamba_id_there + '_' + s(her_name).replace(' ','').replace('\n','')
+                                     + s(age) + '_' + '{0:02d}'.format(i+1) + '.jpg', 'wb')
                             f.write(foto)
                             f.close()
                         self.fotos_count[id_there] = len(all_fotos)
