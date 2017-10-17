@@ -298,7 +298,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
     def click_tableFotos(self, index=None):
         if index == None or index.row() < 0 or index.row() > 0 or index.column() < 0:
             index = self.tableFotos.model().index(0, 0)
-        proc = Popen('eog ' + 'photos/'+ self.mamba_id[self.id_tek] + '_' + s(self.names[self.id_tek]).replace(' ','') +
+        proc = Popen('nomacs ' + 'photos/'+ self.mamba_id[self.id_tek] + '_' + s(self.names[self.id_tek]).replace(' ','') +
                      s(self.ages[self.id_tek]) + '_' + '{0:02d}'.format(index.column()+1) + '.jpg', shell=True,
                      stdout=PIPE, stderr=PIPE)
         proc.wait()  # дождаться выполнения
