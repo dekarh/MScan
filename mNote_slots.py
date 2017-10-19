@@ -90,7 +90,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         self.stPeopleTo = 9
         self.cbPeopleTo.addItems(PEOPLE)
         self.cbPeopleTo.setCurrentIndex(self.stPeopleTo)
-        self.stStatus = 1
+        self.stStatus = 0
         self.cbStatus.addItems(ONLINE)
         self.cbStatus.setCurrentIndex(self.stStatus)
         self.cbPeople.addItems(PEOPLE)
@@ -123,7 +123,13 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         read_cursor = self.dbconn.cursor()
         sql_append = ''
         if self.stStatus == 0:
+            sql_append = 'AND status > 0 '
+        elif self.stStatus == 1:
+            sql_append = 'AND DATE(access_date) >= DATE_SUB(NOW(), INTERVAL 24 HOUR) '
+        elif self.stStatus == 2:
             sql_append = 'AND DATE(access_date) >= DATE_SUB(NOW(), INTERVAL 3 DAY) '
+        elif self.stStatus == 3:
+            sql_append = 'AND DATE(access_date) >= DATE_SUB(NOW(), INTERVAL 7 DAY) '
         if self.cbHTML.currentIndex() == 1:
             sql_append += 'AND html IS NOT NULL ORDER BY age DESC;'# сообщения не показывает, с...
         elif self.cbHTML.currentIndex() == 0:
@@ -288,7 +294,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             self.tableFotos.setItem(0, i-1, QTableWidgetItem(str(i)))
         self.tableFotos.resizeColumnsToContents()
 
-    def click_label_3(self):
+    def click_label_3(self, index=None):
         if index == None or index.row() < 0 or index.row() > 0 or index.column() < 0:
             index = self.tableFotos.model().index(0, 0)
         pixmap = QPixmap('photos/'+ self.mamba_id[self.id_tek] + '_' + s(self.names[self.id_tek]).replace(' ','') +
@@ -524,9 +530,9 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         wj(self.drv)
 
     def refreshing(self):                           # Обновление статусов
-#        if not self.refresh_started:
-#            return
-#        self.drv.switch_to.window(self.drv.window_handles[0])
+        if not self.refresh_started:
+            return
+        self.drv.switch_to.window(self.drv.window_handles[0])
         sql = 'UPDATE peoples SET status = %s WHERE id > 0'     # Сначала всех в оффлайн
         write_cursor = self.dbconn.cursor()
         write_cursor.execute(sql, (0,))
@@ -543,9 +549,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
         while has_new:
 #            page_link = self.drv.find_element_by_xpath('//DIV[@class="pager wrap"]//LI[text()="' + str(page) + '"]')
 #            page_link.click()
-            for i in range(0, page):
-#                self.drv.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                self.drv.execute_script("window.scrollTo(0, 900);")
+            self.drv.execute_script("window.scrollTo(0, " + str(page*3000) + ");")
             tiles = []
             tiles = p(d=self.drv, f='ps', **B['tiles'])
             names = []
@@ -562,6 +566,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             if len(names) != q or len(hrefs) != q or len(fotos_hrefs) != q:
                 print('Обновление: Количество в массивах не совпадает')
                 break
+#            tiles[0].location_once_scrolled_into_view
             for i, mamba_href in enumerate(hrefs):
                 nextload = False
                 mamba_id = self.convert_mamba_id(mamba_href)
@@ -669,7 +674,7 @@ class MainWindowSlots(Ui_Form):   # Определяем функции, кот�
             statuses = []
             if (not reload) or (i == len(hrefs)-1):
 #                self.drv.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                self.drv.execute_script("window.scrollTo(0, 900);")
+                self.drv.execute_script("window.scrollTo(0, 3000);")
                 page += 1
 
 #            if i_tek >= len(hrefs) - 1:
